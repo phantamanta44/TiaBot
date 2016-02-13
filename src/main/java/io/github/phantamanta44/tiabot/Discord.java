@@ -91,7 +91,7 @@ public class Discord {
 				.collect(Collectors.toList());
 	}
 	
-	public IChannel getChannel(String id) {
+	public IChannel getChannelById(String id) {
 		return dcCli.getChannelByID(id);
 	}
 
