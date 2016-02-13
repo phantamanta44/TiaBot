@@ -104,7 +104,8 @@ public class CommandDispatcher implements ICTListener {
 	private void processCommand(IUser sender, String cmdName, String[] args, IEventContext ctx) {
 		ICommand cmd;
 		if ((cmd = aliasMapping.get(cmdName)) != null) {
-			TiaBot.logger.info("C %s/%s %s: %s %s", ctx.getGuild().getName(), ctx.getChannel().getName(),
+			String guildName = !ctx.getChannel().isPrivate() ? ctx.getGuild().getName() + "/" : "";
+			TiaBot.logger.info("C %s%s %s: %s %s", guildName, ctx.getChannel().getName(),
 					ctx.getUser().getName(), cmd.getName(), MessageUtils.concat(args));
 			if (cmd.canUseCommand(sender, ctx))
 				cmd.execute(sender, args, ctx);

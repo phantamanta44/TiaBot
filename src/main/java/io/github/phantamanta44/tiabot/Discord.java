@@ -56,6 +56,7 @@ public class Discord {
 	public void onReady(ReadyEvent event) {
 		readyCb.run();
 		TiaBot.logger.info("Logged in as \"%s\". Token: %s", dcCli.getOurUser().getName(), dcCli.getToken());
+		setGameCaption(TiaBot.config.get("game"));
 	}
 	
 	public IUser getBot() {
