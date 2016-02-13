@@ -117,7 +117,8 @@ public class CommandEval implements ICommand {
 		ScriptableObject.putProperty(scope, "me", HostObjectUser.impl(ec.getUser(), scope));
 		ScriptableObject.putProperty(scope, "bot", HostObjectUser.impl(Discord.getInstance().getBot(), scope));
 		ScriptableObject.putProperty(scope, "channel", HostObjectChannel.impl(ec.getChannel(), scope));
-		ScriptableObject.putProperty(scope, "guild", HostObjectGuild.impl(ec.getGuild(), scope));
+		if (!ec.getChannel().isPrivate())
+			ScriptableObject.putProperty(scope, "guild", HostObjectGuild.impl(ec.getGuild(), scope));
 		ScriptableObject.putProperty(scope, "api", Context.getCurrentContext().newObject(scope, "DiscordAPI"));
 	}
 	
