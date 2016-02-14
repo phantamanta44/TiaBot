@@ -49,7 +49,7 @@ public class CommandInfo implements ICommand {
 		String infoStr = info.stream()
 				.map(e -> e.getKey().concat(": ").concat(String.valueOf(e.getValue())))
 				.reduce((a, b) -> a.concat("\n").concat(b)).get();
-		ctx.sendMessage("**Bot Information:**\n```%s```\nSource code available at https://github.com/phantamanta44/Celestia", infoStr);
+		ctx.sendMessage("**Bot Information:**\n```%s```\nSource code available at https://github.com/phantamanta44/TiaBot", infoStr);
 	}
 
 	@Override
