@@ -18,6 +18,7 @@ public class TiaBot {
 	public static final LogWrapper logger = new LogWrapper("TiaBot");
 	public static final IniConfig config = new IniConfig("tiabot.conf");
 	
+	private static final File ADMINS_FILE = new File("admins.txt");
 	private static final Set<String> controllers = new HashSet<>();
 	private static String prefix;
 	
@@ -42,12 +43,15 @@ public class TiaBot {
 		ModuleManager.registerModule(new ScriptModule(), config.getBoolean("mod.scripting"));
 	}
 	
-	private static void getAdmins() throws IOException {
-		BufferedReader strIn = new BufferedReader(new FileReader(new File("admins.txt")));
-		String line;
-		while ((line = strIn.readLine()) != null)
-			controllers.add(line);
-		strIn.close();
+	private static void getAdmins() {
+		try (BufferedReader strIn = new BufferedReader(new FileReader(ADMINS_FILE))) {
+			String line;
+			while ((line = strIn.readLine()) != null)
+				controllers.add(line);
+		} catch (IOException ex) {
+			logger.severe("Error retrieving admin list!");
+			ex.printStackTrace();
+		}
 	}
 	
 	public static boolean isAdmin(IUser user) {

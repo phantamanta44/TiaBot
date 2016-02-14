@@ -18,18 +18,17 @@ import sx.blah.discord.handle.obj.IUser;
 
 public class DuelManager implements ICTListener {
 
+	private static final File DUEL_FILE = new File("duel.txt");
 	private static final ChanceList<String> words = new ChanceList<>();
 	
 	private static Timer taskTimer = new Timer();
 	private static Map<String, Duel> duels = new ConcurrentHashMap<>();
 	
 	public DuelManager() {
-		try {
-			BufferedReader strIn = new BufferedReader(new FileReader(new File("duel.txt")));
+		try (BufferedReader strIn = new BufferedReader(new FileReader(DUEL_FILE))) {
 			String line;
 			while ((line = strIn.readLine()) != null)
 				words.addOutcome(line);
-			strIn.close();
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}

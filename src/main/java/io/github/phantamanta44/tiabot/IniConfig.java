@@ -21,21 +21,24 @@ public class IniConfig {
 		configFile = file;
 	}
 	
-	public void read() throws Exception {
+	public void read() {
 		configKeys.clear();
-		BufferedReader reader = new BufferedReader(new FileReader(configFile));
-		String line;
-		while ((line = reader.readLine()) != null) {
-			if (line.startsWith("#"))
-				continue;
-			String[] parts = line.split("=", 2);
-			if (parts.length < 2) {
-				TiaBot.logger.warn("Invalid config line:\n\t%s", line);
-				continue;
+		try (BufferedReader reader = new BufferedReader(new FileReader(configFile))) {
+			String line;
+			while ((line = reader.readLine()) != null) {
+				if (line.startsWith("#"))
+					continue;
+				String[] parts = line.split("=", 2);
+				if (parts.length < 2) {
+					TiaBot.logger.warn("Invalid config line:\n\t%s", line);
+					continue;
+				}
+				configKeys.put(parts[0], parts[1]);
 			}
-			configKeys.put(parts[0], parts[1]);
+		} catch (Exception ex) {
+			TiaBot.logger.severe("Error reading from config!");
+			ex.printStackTrace();
 		}
-		reader.close();
 	}
 	
 	public String get(String key) {
