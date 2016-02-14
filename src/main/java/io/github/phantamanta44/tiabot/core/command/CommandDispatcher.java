@@ -91,7 +91,7 @@ public class CommandDispatcher implements ICTListener {
 					break;
 				}
 			}
-			TiaBot.logger.info("E %s/%s %s: %s for %s %s", ctx.getGuild().getName(),
+			TiaBot.logger.info("E %s/%s %s: \"%s\" for %s %s", ctx.getGuild().getName(),
 					ctx.getChannel().getName(),	ctx.getUser().getName(), msg, cmd.getName(),
 					args.stream().reduce((a, b) -> a.concat(" ").concat(b)).orElse(""));
 			if (cmd.canUseCommand(sender, ctx))

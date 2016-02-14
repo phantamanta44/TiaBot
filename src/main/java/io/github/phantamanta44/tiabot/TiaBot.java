@@ -9,6 +9,7 @@ import java.util.Set;
 
 import io.github.phantamanta44.tiabot.module.ModuleManager;
 import io.github.phantamanta44.tiabot.module.core.CoreModule;
+import io.github.phantamanta44.tiabot.module.random.RandomModule;
 import io.github.phantamanta44.tiabot.module.scripting.ScriptModule;
 import sx.blah.discord.handle.obj.IUser;
 
@@ -37,6 +38,7 @@ public class TiaBot {
 	private static void registerModules() {
 		setPrefix(config.get("prefix"));
 		new CoreModule().onEnable();
+		ModuleManager.registerModule(new RandomModule(), config.getBoolean("mod.random"));
 		ModuleManager.registerModule(new ScriptModule(), config.getBoolean("mod.scripting"));
 	}
 	

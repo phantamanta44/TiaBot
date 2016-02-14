@@ -2,8 +2,10 @@ package io.github.phantamanta44.tiabot.util;
 
 import java.util.Arrays;
 
+import io.github.phantamanta44.tiabot.Discord;
 import io.github.phantamanta44.tiabot.TiaBot;
 import sx.blah.discord.handle.obj.IChannel;
+import sx.blah.discord.handle.obj.IUser;
 
 public class MessageUtils {
 	
@@ -18,6 +20,12 @@ public class MessageUtils {
 			TiaBot.logger.warn("Could not send message \"%s\"!", msg);
 			ex.printStackTrace();
 		}
+	}
+
+	public static IUser resolveMention(String men) {
+		if (!men.matches("<@\\S+>"))
+			return null;
+		return Discord.getInstance().getUserById(men.substring(2, men.length() - 1));
 	}
 	
 }

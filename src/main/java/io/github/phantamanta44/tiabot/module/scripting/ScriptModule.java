@@ -13,9 +13,4 @@ public class ScriptModule extends CTModule {
 		return "scripting";
 	}
 	
-	@Override
-	public void onDisable() {
-		throw new UnsupportedOperationException();
-	}
-
 }
