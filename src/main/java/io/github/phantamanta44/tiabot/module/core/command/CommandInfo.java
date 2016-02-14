@@ -6,11 +6,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map.Entry;
-import java.util.concurrent.TimeUnit;
 
 import io.github.phantamanta44.tiabot.Discord;
 import io.github.phantamanta44.tiabot.core.command.ICommand;
 import io.github.phantamanta44.tiabot.core.context.IEventContext;
+import io.github.phantamanta44.tiabot.util.MessageUtils;
 import sx.blah.discord.handle.obj.IUser;
 
 public class CommandInfo implements ICommand {
@@ -40,7 +40,7 @@ public class CommandInfo implements ICommand {
 	@Override
 	public void execute(IUser sender, String[] args, IEventContext ctx) {
 		List<Entry<String, Object>> info = new ArrayList<>();
-		info.add(new SimpleEntry<>("Uptime", getUptime()));
+		info.add(new SimpleEntry<>("Uptime", MessageUtils.formatDuration(ManagementFactory.getRuntimeMXBean().getUptime())));
 		info.add(new SimpleEntry<>("Servers", Discord.getInstance().getGuilds().size()));
 		info.add(new SimpleEntry<>("Channels", Discord.getInstance().getChannels().size()));
 		info.add(new SimpleEntry<>("Users", Discord.getInstance().getUsers().size()));
@@ -60,20 +60,6 @@ public class CommandInfo implements ICommand {
 	@Override
 	public String getPermissionMessage(IUser sender, IEventContext ctx) {
 		throw new UnsupportedOperationException();
-	}
-	
-	private static String getUptime() {
-		long millis = ManagementFactory.getRuntimeMXBean().getUptime();
-		
-		long days = TimeUnit.MILLISECONDS.toDays(millis);
-		millis -= TimeUnit.DAYS.toMillis(days);
-		long hours = TimeUnit.MILLISECONDS.toHours(millis);
-		millis -= TimeUnit.HOURS.toMillis(hours);
-		long minutes = TimeUnit.MILLISECONDS.toMinutes(millis);
-		millis -= TimeUnit.MINUTES.toMillis(minutes);
-		long seconds = TimeUnit.MILLISECONDS.toSeconds(millis);
-
-		return String.format("%s Days, %s Hours, %s Minutes, %s Seconds", days, hours, minutes, seconds);
 	}
 	
 	@Override
