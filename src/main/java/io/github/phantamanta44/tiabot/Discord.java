@@ -3,6 +3,8 @@ package io.github.phantamanta44.tiabot;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.stream.Collectors;
 
 import io.github.phantamanta44.tiabot.core.EventDispatcher;
@@ -11,6 +13,8 @@ import sx.blah.discord.api.ClientBuilder;
 import sx.blah.discord.api.DiscordException;
 import sx.blah.discord.api.IDiscordClient;
 import sx.blah.discord.handle.EventSubscriber;
+import sx.blah.discord.handle.impl.events.DiscordDisconnectedEvent;
+import sx.blah.discord.handle.impl.events.DiscordDisconnectedEvent.Reason;
 import sx.blah.discord.handle.impl.events.ReadyEvent;
 import sx.blah.discord.handle.obj.IChannel;
 import sx.blah.discord.handle.obj.IGuild;
@@ -27,6 +31,7 @@ public class Discord {
 	
 	private IDiscordClient dcCli;
 	private Runnable readyCb;
+	private Timer dcTimer = new Timer();
 	
 	public Discord buildClient(String email, String pass) throws DiscordException {
 		TiaBot.logger.info("Building Discord API...");
@@ -57,6 +62,19 @@ public class Discord {
 		readyCb.run();
 		TiaBot.logger.info("Logged in as \"%s\". Token: %s", dcCli.getOurUser().getName(), dcCli.getToken());
 		setGameCaption(TiaBot.config.get("game"));
+	}
+	
+	@EventSubscriber
+	public void onDisconnect(DiscordDisconnectedEvent event) {
+		if (event.getReason() != Reason.LOGGED_OUT) {
+			TiaBot.logger.warn("Disconnected from Discord! Attempting to reconnect...");
+			new ReconnectAttempt().run();
+		}
+	}
+	
+	public void attemptReconnect() {
+		if (!dcCli.isReady())
+			dcTimer.schedule(new ReconnectAttempt(), 15000L);
 	}
 	
 	public IUser getBot() {
@@ -113,5 +131,21 @@ public class Discord {
 			opt = Optional.of(gameName);
 		dcCli.updatePresence(getBot().getPresence() == Presences.IDLE, opt);
 	}
+	
+	public static class ReconnectAttempt extends TimerTask {
+
+		@Override
+		public void run() {
+			try {
+				Discord.getInstance().dcCli.login();
+			} catch (Exception ex) {
+				TiaBot.logger.warn("Could not reconnect: %s", ex.getMessage());
+				TiaBot.logger.warn("Trying again in 15 seconds...");
+				Discord.getInstance().attemptReconnect();
+			}
+		}
+
+	}
+
 
 }
