@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import io.github.phantamanta44.tiabot.TiaBot;
 import io.github.phantamanta44.tiabot.core.ICTListener.ListenTo;
@@ -27,6 +29,7 @@ public class EventDispatcher {
 
 	private static final Map<Class<? extends ICTListener>, HandlerSignature> handlerSigMap = new ConcurrentHashMap<>();
 	private static final List<ICTListener> handlers = new CopyOnWriteArrayList<>();
+	private static final ExecutorService executor = Executors.newCachedThreadPool();
 	
 	public static void registerHandler(ICTListener handler) {
 		handlers.add(handler);
@@ -47,7 +50,7 @@ public class EventDispatcher {
 			HandlerSignature handlerSig = handlerSigMap.get(listener.getClass());
 			if ((listenerMethod = handlerSig.listenerMethods.get(eventType)) != null) {
 				try {
-					listenerMethod.invoke(listener, event, getContext(event));
+					executor.submit(() -> listenerMethod.invoke(listener, event, getContext(event)));
 				} catch (Exception e) {
 					TiaBot.logger.severe("Event handling error!");
 					e.printStackTrace();

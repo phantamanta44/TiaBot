@@ -1,5 +1,6 @@
 package io.github.phantamanta44.tiabot.core.context;
 
+import io.github.phantamanta44.tiabot.core.rate.RateLimitedChannel;
 import io.github.phantamanta44.tiabot.util.MessageUtils;
 import sx.blah.discord.handle.Event;
 import sx.blah.discord.handle.obj.IChannel;
@@ -11,17 +12,19 @@ public class EventContextMessage implements IEventContext {
 
 	private long timestamp;
 	private IMessage message;
+	private IChannel channel;
 	private Class<? extends Event> eventType;
 	
 	public EventContextMessage(IMessage msg, Class<? extends Event> clazz) {
 		timestamp = System.currentTimeMillis();
 		message = msg;
+		channel = new RateLimitedChannel(msg.getChannel());
 		eventType = clazz;
 	}
 	
 	@Override
 	public void sendMessage(String msg) {
-		MessageUtils.sendMessage(message.getChannel(), msg);
+		MessageUtils.sendMessage(channel, msg);
 	}
 
 	@Override
@@ -41,12 +44,12 @@ public class EventContextMessage implements IEventContext {
 
 	@Override
 	public IGuild getGuild() {
-		return message.getChannel().getGuild();
+		return channel.getGuild();
 	}
 
 	@Override
 	public IChannel getChannel() {
-		return message.getChannel();
+		return channel;
 	}
 
 	@Override

@@ -2,6 +2,7 @@ package io.github.phantamanta44.tiabot.core.context;
 
 import java.lang.reflect.Method;
 
+import io.github.phantamanta44.tiabot.core.rate.RateLimitedChannel;
 import io.github.phantamanta44.tiabot.util.MessageUtils;
 import sx.blah.discord.handle.Event;
 import sx.blah.discord.handle.obj.IChannel;
@@ -27,13 +28,13 @@ public class GenericEventContext implements IEventContext {
 				if (m.getName().equalsIgnoreCase("getUser"))
 					user = (IUser)m.invoke(event);
 				else if (m.getName().equalsIgnoreCase("getChannel")) {
-					channel = (IChannel)m.invoke(event);
+					channel = new RateLimitedChannel((IChannel)m.invoke(event));
 					guild = channel.getGuild();
 				}
 				else if (m.getName().equalsIgnoreCase("getMessage")) {
 					msg = (IMessage)m.invoke(event);
 					user = msg.getAuthor();
-					channel = msg.getChannel();
+					channel = new RateLimitedChannel(msg.getChannel());
 					guild = channel.getGuild();
 				}
 			} catch (Exception ex) {
