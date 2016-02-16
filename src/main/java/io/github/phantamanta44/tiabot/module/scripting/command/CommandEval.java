@@ -31,7 +31,7 @@ import sx.blah.discord.handle.obj.IUser;
 
 public class CommandEval implements ICommand {
 	
-	private static final Pattern lambdaRegex = Pattern.compile("\\|(\\w+):\\(?(\\w+(?:,\\s*\\w+)*)\\)?\\s*->\\s*\\{?(.*?)\\}?\\|");
+	private static final Pattern lambdaRegex = Pattern.compile("([A-Za-z]+)\\|\\s*\\(?(\\w+(?:,\\s*\\w+)*)\\)?\\s*->\\s*\\{?(.*?)\\}?\\|");
 	private static final Map<String, String> lambdaAbbrev = new HashMap<>();
 	
 	static {
