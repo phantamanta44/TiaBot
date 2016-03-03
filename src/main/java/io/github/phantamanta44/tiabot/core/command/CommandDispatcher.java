@@ -52,7 +52,12 @@ public class CommandDispatcher implements ICTListener {
 
 	@ListenTo
 	public void onMessageReceived(MessageReceivedEvent event, IEventContext ctx) {
-		processEvent(event.getMessage().getAuthor(), event.getMessage().getContent(), ctx);
+		String msg = ctx.getMessage().getContent();
+		if (msg.startsWith(TiaBot.getPrefix()))
+			processEvent(event.getMessage().getAuthor(), msg, ctx);
+		else if (ctx.getChannel().isPrivate())
+			parseEnglishInvoc(ctx.getUser(), msg, ctx);
+		
 	}
 	
 	private void processEvent(IUser sender, String msg, IEventContext ctx) {
@@ -75,6 +80,10 @@ public class CommandDispatcher implements ICTListener {
 		IUser sender = event.getMessage().getAuthor();
 		if (!msg.startsWith(men) && !msg.endsWith(men))
 			return;
+		parseEnglishInvoc(sender, msg, ctx);
+	}
+	
+	private void parseEnglishInvoc(IUser sender, String msg, IEventContext ctx) {
 		for (Entry<String, ICommand> entry : regexMapping.entrySet()) {
 			Matcher m = Pattern.compile(entry.getKey(), Pattern.CASE_INSENSITIVE).matcher(msg);
 			if (!m.matches())
