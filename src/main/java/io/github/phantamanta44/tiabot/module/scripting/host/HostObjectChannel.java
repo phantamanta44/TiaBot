@@ -1,13 +1,12 @@
 package io.github.phantamanta44.tiabot.module.scripting.host;
 
-import java.util.stream.Stream;
-
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.ScriptableObject;
 import org.mozilla.javascript.annotations.JSFunction;
 import org.mozilla.javascript.annotations.JSGetter;
 
+import io.github.phantamanta44.tiabot.module.scripting.DelegateStream;
 import sx.blah.discord.handle.obj.IChannel;
 import sx.blah.discord.handle.obj.IMessage;
 
@@ -50,10 +49,10 @@ public class HostObjectChannel extends ScriptableObject {
 	}
 	
 	@JSGetter
-	public Stream<HostObjectMessage> messages() {
+	public DelegateStream<HostObjectMessage> messages() {
 		Scriptable scope = ScriptableObject.getTopLevelScope(this);
-		return dataSrc.getMessages().stream()
-				.map(m -> HostObjectMessage.impl(m, scope));
+		return new DelegateStream<>(dataSrc.getMessages().stream()
+				.map(m -> HostObjectMessage.impl(m, scope)));
 	}
 	
 	@JSGetter

@@ -1,13 +1,12 @@
 package io.github.phantamanta44.tiabot.module.scripting.host;
 
-import java.util.stream.Stream;
-
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.ScriptableObject;
 import org.mozilla.javascript.annotations.JSFunction;
 import org.mozilla.javascript.annotations.JSGetter;
 
+import io.github.phantamanta44.tiabot.module.scripting.DelegateStream;
 import sx.blah.discord.handle.obj.IChannel;
 import sx.blah.discord.handle.obj.IGuild;
 import sx.blah.discord.handle.obj.IRole;
@@ -44,10 +43,10 @@ public class HostObjectGuild extends ScriptableObject {
 	}
 	
 	@JSGetter
-	public Stream<HostObjectUser> bannedUsers() throws Exception {
+	public DelegateStream<HostObjectUser> bannedUsers() throws Exception {
 		Scriptable scope = ScriptableObject.getTopLevelScope(this);
-		return dataSrc.getBannedUsers().stream()
-				.map(u -> HostObjectUser.impl(u, scope));
+		return new DelegateStream<>(dataSrc.getBannedUsers().stream()
+				.map(u -> HostObjectUser.impl(u, scope)));
 	}
 	
 	@JSFunction
@@ -59,10 +58,10 @@ public class HostObjectGuild extends ScriptableObject {
 	}
 	
 	@JSGetter
-	public Stream<HostObjectChannel> channels() {
+	public DelegateStream<HostObjectChannel> channels() {
 		Scriptable scope = ScriptableObject.getTopLevelScope(this);
-		return dataSrc.getChannels().stream()
-				.map(c -> HostObjectChannel.impl(c, scope));
+		return new DelegateStream<>(dataSrc.getChannels().stream()
+				.map(c -> HostObjectChannel.impl(c, scope)));
 	}
 	
 	@JSGetter
@@ -89,10 +88,10 @@ public class HostObjectGuild extends ScriptableObject {
 	}
 	
 	@JSGetter
-	public Stream<HostObjectRole> roles() {
+	public DelegateStream<HostObjectRole> roles() {
 		Scriptable scope = ScriptableObject.getTopLevelScope(this);
-		return dataSrc.getRoles().stream()
-				.map(r -> HostObjectRole.impl(r, scope));
+		return new DelegateStream<>(dataSrc.getRoles().stream()
+				.map(r -> HostObjectRole.impl(r, scope)));
 	}
 	
 	@JSFunction
@@ -104,10 +103,10 @@ public class HostObjectGuild extends ScriptableObject {
 	}
 	
 	@JSGetter
-	public Stream<HostObjectUser> users() {
+	public DelegateStream<HostObjectUser> users() {
 		Scriptable scope = ScriptableObject.getTopLevelScope(this);
-		return dataSrc.getUsers().stream()
-				.map(u -> HostObjectUser.impl(u, scope));
+		return new DelegateStream<>(dataSrc.getUsers().stream()
+				.map(u -> HostObjectUser.impl(u, scope)));
 	}
 	
 	public IGuild getDataSrc() {

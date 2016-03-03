@@ -53,6 +53,7 @@ public class HostObjectUser extends ScriptableObject {
 		return dataSrc.getGame().orElse("");
 	}
 	
+	@JSGetter
 	public String avatarUrl() {
 		return dataSrc.getAvatarURL();
 	}

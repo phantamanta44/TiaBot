@@ -1,13 +1,13 @@
 package io.github.phantamanta44.tiabot.module.scripting.host;
 
 import java.time.ZoneOffset;
-import java.util.stream.Stream;
 
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.ScriptableObject;
 import org.mozilla.javascript.annotations.JSGetter;
 
+import io.github.phantamanta44.tiabot.module.scripting.DelegateStream;
 import sx.blah.discord.handle.obj.IMessage;
 
 public class HostObjectMessage extends ScriptableObject {
@@ -56,10 +56,10 @@ public class HostObjectMessage extends ScriptableObject {
 	}
 	
 	@JSGetter
-	public Stream<HostObjectUser> lol() {
+	public DelegateStream<HostObjectUser> lol() {
 		Scriptable scope = ScriptableObject.getTopLevelScope(this);
-		return dataSrc.getMentions().stream()
-				.map(u -> HostObjectUser.impl(u, scope));
+		return new DelegateStream<>(dataSrc.getMentions().stream()
+				.map(u -> HostObjectUser.impl(u, scope)));
 	}
 	
 	public IMessage getDataSrc() {

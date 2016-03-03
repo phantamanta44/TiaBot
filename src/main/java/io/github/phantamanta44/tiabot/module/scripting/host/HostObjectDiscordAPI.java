@@ -2,7 +2,6 @@ package io.github.phantamanta44.tiabot.module.scripting.host;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Stream;
 
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.ScriptableObject;
@@ -11,6 +10,7 @@ import org.mozilla.javascript.annotations.JSGetter;
 
 import io.github.phantamanta44.tiabot.Discord;
 import io.github.phantamanta44.tiabot.core.IMessageable;
+import io.github.phantamanta44.tiabot.module.scripting.DelegateStream;
 import sx.blah.discord.handle.obj.IChannel;
 import sx.blah.discord.handle.obj.IGuild;
 import sx.blah.discord.handle.obj.IUser;
@@ -31,21 +31,21 @@ public class HostObjectDiscordAPI extends ScriptableObject {
 	}
 	
 	@JSGetter
-	public Stream<HostObjectGuild> guilds() {
-		return Discord.getInstance().getGuilds().stream()
-				.map(g -> HostObjectGuild.impl(g, ScriptableObject.getTopLevelScope(this)));
+	public DelegateStream<HostObjectGuild> guilds() {
+		return new DelegateStream<>(Discord.getInstance().getGuilds().stream()
+				.map(g -> HostObjectGuild.impl(g, ScriptableObject.getTopLevelScope(this))));
 	}
 	
 	@JSGetter
-	public Stream<HostObjectUser> users() {
-		return Discord.getInstance().getUsers().stream()
-				.map(u -> HostObjectUser.impl(u, ScriptableObject.getTopLevelScope(this)));
+	public DelegateStream<HostObjectUser> users() {
+		return new DelegateStream<>(Discord.getInstance().getUsers().stream()
+				.map(u -> HostObjectUser.impl(u, ScriptableObject.getTopLevelScope(this))));
 	}
 	
 	@JSGetter
-	public Stream<HostObjectChannel> channels() {
-		return Discord.getInstance().getChannels().stream()
-				.map(c -> HostObjectChannel.impl(c, ScriptableObject.getTopLevelScope(this)));
+	public DelegateStream<HostObjectChannel> channels() {
+		return new DelegateStream<>(Discord.getInstance().getChannels().stream()
+				.map(c -> HostObjectChannel.impl(c, ScriptableObject.getTopLevelScope(this))));
 	}
 	
 	@JSFunction
