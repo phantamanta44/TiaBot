@@ -135,6 +135,7 @@ public class RateLimitedChannel implements IChannel {
 		}
 	}
 
+	@Deprecated
 	@Override
 	public void removePermissionsOverride(String id)
 			throws MissingPermissionsException, DiscordException {
@@ -145,6 +146,7 @@ public class RateLimitedChannel implements IChannel {
 		}
 	}
 
+	@Deprecated
 	@Override
 	public void overrideRolePermissions(String roleID, EnumSet<Permissions> toAdd, EnumSet<Permissions> toRemove)
 			throws MissingPermissionsException, DiscordException {
@@ -155,6 +157,7 @@ public class RateLimitedChannel implements IChannel {
 		}
 	}
 
+	@Deprecated
 	@Override
 	public void overrideUserPermissions(String userID, EnumSet<Permissions> toAdd, EnumSet<Permissions> toRemove)
 			throws MissingPermissionsException, DiscordException {
@@ -259,6 +262,30 @@ public class RateLimitedChannel implements IChannel {
 	@Override
 	public MessageList getMessages() {
 		return parent.getMessages();
+	}
+
+	@Override
+	public void removePermissionsOverride(IUser user)
+			throws MissingPermissionsException, HTTP429Exception, DiscordException {
+		parent.removePermissionsOverride(user);
+	}
+
+	@Override
+	public void removePermissionsOverride(IRole role)
+			throws MissingPermissionsException, HTTP429Exception, DiscordException {
+		parent.removePermissionsOverride(role);
+	}
+
+	@Override
+	public void overrideRolePermissions(IRole role, EnumSet<Permissions> toAdd, EnumSet<Permissions> toRemove)
+			throws MissingPermissionsException, HTTP429Exception, DiscordException {
+		parent.overrideRolePermissions(role, toAdd, toRemove);
+	}
+
+	@Override
+	public void overrideUserPermissions(IUser user, EnumSet<Permissions> toAdd, EnumSet<Permissions> toRemove)
+			throws MissingPermissionsException, HTTP429Exception, DiscordException {
+		parent.overrideUserPermissions(user, toAdd, toRemove);
 	}
 
 }

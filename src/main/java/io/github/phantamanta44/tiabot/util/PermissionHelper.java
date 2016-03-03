@@ -11,7 +11,7 @@ import sx.blah.discord.handle.obj.Permissions;
 public class PermissionHelper {
 
 	public static boolean hasPermission(IUser user, IChannel chan, Permissions perm) {
-		EnumSet<Permissions> perms = user.getRolesForGuild(chan.getGuild().getID()).stream()
+		EnumSet<Permissions> perms = user.getRolesForGuild(chan.getGuild()).stream()
 				.map(IRole::getPermissions)
 				.flatMap(EnumSet::stream)
 				.collect(() -> EnumSet.noneOf(Permissions.class), (s, p) -> s.add(p), (a, b) -> a.addAll(b));

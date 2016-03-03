@@ -82,7 +82,7 @@ public class HostObjectGuild extends ScriptableObject {
 	
 	@JSFunction
 	public HostObjectRole getRole(String id) {
-		IRole role = dataSrc.getRoleForID(id);
+		IRole role = dataSrc.getRoleByID(id);
 		if (role == null)
 			return null;
 		return HostObjectRole.impl(role, ScriptableObject.getTopLevelScope(this));
