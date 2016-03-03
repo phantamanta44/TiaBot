@@ -17,6 +17,7 @@ import io.github.phantamanta44.tiabot.core.context.IEventContext;
 import io.github.phantamanta44.tiabot.util.MessageUtils;
 import sx.blah.discord.handle.impl.events.MentionEvent;
 import sx.blah.discord.handle.impl.events.MessageReceivedEvent;
+import sx.blah.discord.handle.impl.obj.PrivateChannel;
 import sx.blah.discord.handle.obj.IUser;
 
 public class CommandDispatcher implements ICTListener {
@@ -52,18 +53,16 @@ public class CommandDispatcher implements ICTListener {
 
 	@ListenTo
 	public void onMessageReceived(MessageReceivedEvent event, IEventContext ctx) {
-		String msg = ctx.getMessage().getContent();
-		if (msg.startsWith(TiaBot.getPrefix()))
-			processEvent(event.getMessage().getAuthor(), msg, ctx);
-		else if (ctx.getChannel().isPrivate())
-			parseEnglishInvoc(ctx.getUser(), msg, ctx);
-		
+		processEvent(ctx.getMessage().getAuthor(), ctx.getMessage().getContent(), ctx);
 	}
 	
 	private void processEvent(IUser sender, String msg, IEventContext ctx) {
 		String pref = TiaBot.getPrefix();
-		if (!msg.toLowerCase().startsWith(pref.toLowerCase()))
+		if (!msg.toLowerCase().startsWith(pref.toLowerCase())) {
+			if (ctx.getChannel().isPrivate())
+				parseEnglishInvoc(ctx.getUser(), msg, ctx);
 			return;
+		}
 		String[] msgSplit = msg.substring(pref.length()).split("\\s");
 		String cmd = msgSplit[0];
 		String[] args;
@@ -100,9 +99,15 @@ public class CommandDispatcher implements ICTListener {
 					break;
 				}
 			}
-			TiaBot.logger.info("E %s/%s %s: \"%s\" for %s %s", ctx.getGuild().getName(),
-					ctx.getChannel().getName(),	ctx.getUser().getName(), msg, cmd.getName(),
-					args.stream().reduce((a, b) -> a.concat(" ").concat(b)).orElse(""));
+			if (!ctx.getChannel().isPrivate()) {
+				TiaBot.logger.info("E %s/%s %s: \"%s\" for %s %s", ctx.getGuild().getName(),
+						ctx.getChannel().getName(),	ctx.getUser().getName(), msg, cmd.getName(),
+						args.stream().reduce((a, b) -> a.concat(" ").concat(b)).orElse(""));
+			} else {
+				TiaBot.logger.info("E %s: \"%s\" for %s %s",
+						ctx.getUser().getName(), msg, cmd.getName(),
+						args.stream().reduce((a, b) -> a.concat(" ").concat(b)).orElse(""));
+			}
 			if (cmd.canUseCommand(sender, ctx))
 				cmd.execute(sender, args.toArray(new String[0]), ctx);
 			else
