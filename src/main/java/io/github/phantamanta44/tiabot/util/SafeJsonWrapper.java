@@ -71,4 +71,8 @@ public class SafeJsonWrapper {
 		return src.has(key);
 	}
 	
+	public JsonObject getSource() {
+		return src;
+	}
+	
 }

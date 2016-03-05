@@ -50,5 +50,16 @@ public class ModuleManager {
 	public static Stream<Entry<String, MutableBoolean>> streamStatus() {
 		return status.entrySet().stream();
 	}
+
+	public static void onShutdown() {
+		try {
+			modMap.forEach((k, v) -> {
+				if (isEnabled(k))
+					v.onDisable();
+			});
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+	}
 	
 }

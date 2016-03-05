@@ -43,6 +43,7 @@ public class TiaBot {
 		ModuleManager.registerModule(new RandomModule(), config.getBoolean("mod.random"));
 		ModuleManager.registerModule(new ScriptModule(), config.getBoolean("mod.scripting"));
 		ModuleManager.registerModule(new LoLModule(), config.getBoolean("mod.lol"));
+		Runtime.getRuntime().addShutdownHook(new Thread(() -> ModuleManager.onShutdown()));
 	}
 	
 	private static void getAdmins() {
