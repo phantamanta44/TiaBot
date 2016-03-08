@@ -11,6 +11,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
+import io.github.phantamanta44.tiabot.Discord;
 import io.github.phantamanta44.tiabot.core.ICTListener;
 import io.github.phantamanta44.tiabot.core.context.IEventContext;
 import io.github.phantamanta44.tiabot.util.ChanceList;
@@ -61,6 +62,10 @@ public class DuelManager implements ICTListener {
 			ctx.sendMessage("Nobody to 1v1!");
 			return;
 		}
+		if (victim.getID() == sender.getID()) {
+			ctx.sendMessage("You cannot fight yourself!");
+			return;
+		}
 		ctx.sendMessage("**%s and %s\u2014Get ready to battle!**", sender.mention(), victim.mention());
 		duels.put(ctx.getChannel().getID(), new Duel(sender, victim, ctx));
 	}
@@ -95,6 +100,11 @@ public class DuelManager implements ICTListener {
 				ctx.sendMessage("**1v1 cancelled.**");
 				cancelDuel(ctx.getChannel().getID());
 			}, 10000L, TimeUnit.MILLISECONDS);
+			if (b.getID() == Discord.getInstance().getBot().getID())
+				taskPool.schedule(() -> {
+					ctx.sendMessage(target);
+					update(Discord.getInstance().getBot(), target);
+				}, 50, TimeUnit.MILLISECONDS);
 		}
 		
 		public void update(IUser sender, String msg) {
