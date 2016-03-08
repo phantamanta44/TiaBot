@@ -3,8 +3,9 @@ package io.github.phantamanta44.tiabot;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import io.github.phantamanta44.tiabot.core.EventDispatcher;
@@ -31,7 +32,7 @@ public class Discord {
 	
 	private IDiscordClient dcCli;
 	private Runnable readyCb;
-	private Timer dcTimer = new Timer();
+	private ScheduledExecutorService taskPool = Executors.newSingleThreadScheduledExecutor();
 	
 	public Discord buildClient(String email, String pass) throws DiscordException {
 		TiaBot.logger.info("Building Discord API...");
@@ -68,13 +69,21 @@ public class Discord {
 	public void onDisconnect(DiscordDisconnectedEvent event) {
 		if (event.getReason() != Reason.LOGGED_OUT) {
 			TiaBot.logger.warn("Disconnected from Discord! Attempting to reconnect...");
-			new ReconnectAttempt().run();
+			attemptReconnect(0L);
 		}
 	}
 	
-	public void attemptReconnect() {
+	public void attemptReconnect(long delay) {
 		if (!dcCli.isReady())
-			dcTimer.schedule(new ReconnectAttempt(), 15000L);
+			taskPool.schedule(() -> {
+				try {
+					Discord.getInstance().dcCli.login();
+				} catch (Exception ex) {
+					TiaBot.logger.warn("Could not reconnect: %s", ex.getMessage());
+					TiaBot.logger.warn("Trying again in 15 seconds...");
+					Discord.getInstance().attemptReconnect(15000L);
+				}
+			}, delay, TimeUnit.MILLISECONDS);
 	}
 	
 	public IUser getBot() {
@@ -131,21 +140,5 @@ public class Discord {
 			opt = Optional.of(gameName);
 		dcCli.updatePresence(getBot().getPresence() == Presences.IDLE, opt);
 	}
-	
-	public static class ReconnectAttempt extends TimerTask {
-
-		@Override
-		public void run() {
-			try {
-				Discord.getInstance().dcCli.login();
-			} catch (Exception ex) {
-				TiaBot.logger.warn("Could not reconnect: %s", ex.getMessage());
-				TiaBot.logger.warn("Trying again in 15 seconds...");
-				Discord.getInstance().attemptReconnect();
-			}
-		}
-
-	}
-
 
 }

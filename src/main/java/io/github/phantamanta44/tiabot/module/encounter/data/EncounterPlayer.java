@@ -2,21 +2,25 @@ package io.github.phantamanta44.tiabot.module.encounter.data;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Random;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.StreamSupport;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
+import io.github.phantamanta44.tiabot.Discord;
+import io.github.phantamanta44.tiabot.module.encounter.EncounterData;
 import io.github.phantamanta44.tiabot.module.encounter.data.EncounterDamage.Element;
 import io.github.phantamanta44.tiabot.module.encounter.data.abst.ICriticalChance;
-import io.github.phantamanta44.tiabot.module.encounter.data.abst.ITargetable;
+import io.github.phantamanta44.tiabot.module.encounter.data.abst.ITurnable;
+import io.github.phantamanta44.tiabot.util.IFuture;
 import io.github.phantamanta44.tiabot.util.ISerializable;
 import io.github.phantamanta44.tiabot.util.MathUtils;
 import io.github.phantamanta44.tiabot.util.SafeJsonWrapper;
 import sx.blah.discord.handle.obj.IUser;
 
-public class EncounterPlayer implements ITargetable, ICriticalChance, ISerializable {
+public class EncounterPlayer implements ITurnable, ICriticalChance, ISerializable {
 
 	private static final EncounterSpell[] BASE_KIT;
 	private static final EncounterSpell AUTO_ATK;
@@ -42,8 +46,8 @@ public class EncounterPlayer implements ITargetable, ICriticalChance, ISerializa
 		q.addProperty("cooldown", 5);
 		w.addProperty("type", "SINGLE_TEAMMATE");
 		w.addProperty("script", "bctx.getTarget().addStatusEffect(new EncounterEffect(EncounterEffect.EffectType.SHIELD, 3))");
-		e.addProperty("name", "Tidal Barrage");
-		e.addProperty("desc", "Launches a volley of pressurized water that deals **60 + 30% AP + 15% AD** water damage to each opponent.");
+		e.addProperty("name", "Oceanic Barrage");
+		e.addProperty("desc", "Launches a volley of pressurized fluid that deals **60 + 30% AP + 15% AD** water damage to each opponent.");
 		e.addProperty("cost", 35);
 		q.addProperty("cooldown", 3);
 		e.addProperty("type", "ALL_TARGET");
@@ -92,6 +96,7 @@ public class EncounterPlayer implements ITargetable, ICriticalChance, ISerializa
 		mana = baseMana = stats.getInt("mana");
 		baseManaGen = stats.getInt("manaGen");
 		baseAtk = stats.getInt("atk");
+		baseAp = stats.getInt("ap");
 		baseDef = stats.getInt("def");
 		autoAtk = new EncounterSpell(data.getJsonObject("autoAtk").getSource());
 		JsonArray kit = data.getJsonArray("kit");
@@ -99,8 +104,7 @@ public class EncounterPlayer implements ITargetable, ICriticalChance, ISerializa
 				.map(e -> new EncounterSpell(e.getAsJsonObject()))
 				.toArray(l -> new EncounterSpell[4]);
 		JsonArray items = data.getJsonArray("inv");
-		inv.clear();
-		items.forEach(i -> inv.add(new EncounterItem(i.getAsJsonObject())));
+		items.forEach(i -> inv.add(EncounterData.getItem(i.getAsString())));
 	}
 	
 	@Override
@@ -110,17 +114,27 @@ public class EncounterPlayer implements ITargetable, ICriticalChance, ISerializa
 		ser.addProperty("id", userId);
 		ser.addProperty("level", level);
 		ser.addProperty("xp", xp);
-		ser.addProperty("hp", baseHp);
-		ser.addProperty("mana", baseMana);
-		ser.addProperty("manaGen", baseManaGen);
-		ser.addProperty("atk", baseAtk);
-		ser.addProperty("def", baseDef);
+		JsonObject stats = new JsonObject();
+		stats.addProperty("hp", baseHp);
+		stats.addProperty("mana", baseMana);
+		stats.addProperty("manaGen", baseManaGen);
+		stats.addProperty("atk", baseAtk);
+		stats.addProperty("ap", baseAp);
+		stats.addProperty("def", baseDef);
+		ser.add("stats", stats);
 		ser.add("autoAtk", autoAtk.serialize());
 		JsonArray kit = new JsonArray();
 		Arrays.stream(baseKit)
-				.forEach(s -> kit.add(s.serialize()));
+				.forEach(s -> {
+					if (s != null)
+						kit.add(s.serialize());
+				});
+		ser.add("kit", kit);
 		JsonArray items = new JsonArray();
-		inv.forEach(i -> items.add(i.serialize()));
+		inv.forEach(i -> {
+			if (i != null)
+				items.add(i.getId());
+		});
 		ser.add("inv", items);
 		return ser;
 	}
@@ -242,6 +256,39 @@ public class EncounterPlayer implements ITargetable, ICriticalChance, ISerializa
 				amt = 0;
 			}
 		}
+	}
+
+	public String getName() {
+		return userName;
+	}
+	
+	public String getID() {
+		return userId;
+	}
+	
+	public IUser getUser() {
+		return Discord.getInstance().getUserById(userId);
+	}
+	
+	@Override
+	public IFuture<?> onTurn(Random rand) {
+		return null;
+	}
+
+	public List<EncounterItem> getInv() {
+		return inv;
+	}
+	
+	public EncounterSpell[] getKit() {
+		return baseKit;
+	}
+	
+	public EncounterSpell getAuto() {
+		return autoAtk;
+	}
+	
+	public StatsDto getBaseStats() {
+		return new StatsDto(baseAtk, baseDef, baseAp, hp, baseHp, 0D, 2D, 0D, 0D, mana, baseMana, baseManaGen);
 	}
 
 }

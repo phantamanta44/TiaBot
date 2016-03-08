@@ -7,14 +7,16 @@ import java.util.Random;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
+import io.github.phantamanta44.tiabot.module.encounter.EncounterData;
 import io.github.phantamanta44.tiabot.module.encounter.data.EncounterDamage.Element;
-import io.github.phantamanta44.tiabot.module.encounter.data.abst.ITargetable;
+import io.github.phantamanta44.tiabot.module.encounter.data.abst.ITurnable;
 import io.github.phantamanta44.tiabot.util.ChanceList;
+import io.github.phantamanta44.tiabot.util.IFuture;
 import io.github.phantamanta44.tiabot.util.ISerializable;
 import io.github.phantamanta44.tiabot.util.MathUtils;
 import io.github.phantamanta44.tiabot.util.SafeJsonWrapper;
 
-public class EncounterBoss implements ITargetable, ISerializable, Cloneable {
+public class EncounterBoss implements ITurnable, ISerializable, Cloneable {
 	
 	private String name;
 	private int xpWorth;
@@ -22,6 +24,7 @@ public class EncounterBoss implements ITargetable, ISerializable, Cloneable {
 	private int atk, def;
 	private ChanceList<EncounterItem> drops;
 	private ChanceList<EncounterSpell> spells;
+	private ChanceList<String> idleTexts;
 	private List<EncounterEffect> status;
 	private Element element;
 	
@@ -35,8 +38,10 @@ public class EncounterBoss implements ITargetable, ISerializable, Cloneable {
 		drops = new ChanceList<>();
 		spells = new ChanceList<>();
 		status = new ArrayList<>();
-		data.getJsonArray("drops").forEach(i -> drops.addOutcome(new EncounterItem(i.getAsJsonObject())));
+		idleTexts = new ChanceList<>();
+		data.getJsonArray("drops").forEach(i -> drops.addOutcome(EncounterData.getItem(i.getAsString())));
 		data.getJsonArray("spells").forEach(a -> spells.addOutcome(new EncounterSpell(a.getAsJsonObject())));
+		data.getJsonArray("idle").forEach(i -> idleTexts.addOutcome(i.getAsString()));
 		element = Element.valueOf(data.getString("element"));
 	}
 	
@@ -46,6 +51,7 @@ public class EncounterBoss implements ITargetable, ISerializable, Cloneable {
 		this.maxHp = orig.maxHp;
 		this.drops = orig.drops;
 		this.spells = orig.spells;
+		this.idleTexts = orig.idleTexts;
 		this.status = orig.status;
 		this.atk = orig.atk;
 		this.def = orig.def;
@@ -63,11 +69,14 @@ public class EncounterBoss implements ITargetable, ISerializable, Cloneable {
 		ser.addProperty("def", def);
 		ser.addProperty("element", element.toString());
 		JsonArray dropList = new JsonArray();
-		drops.stream().forEach(d -> dropList.add(d.serialize()));
+		drops.stream().forEach(d -> dropList.add(d.getId()));
 		ser.add("drops", dropList);
 		JsonArray spellList = new JsonArray();
 		spells.stream().forEach(d -> spellList.add(d.serialize()));
 		ser.add("spells", spellList);
+		JsonArray idleList = new JsonArray();
+		idleTexts.stream().forEach(t -> idleList.add(t));
+		ser.add("idle", idleList);
 		return ser;
 	}
 	
@@ -133,6 +142,15 @@ public class EncounterBoss implements ITargetable, ISerializable, Cloneable {
 	@Override
 	public Element getElement() {
 		return element;
+	}
+	
+	public String getIdleText(Random rand) {
+		return idleTexts.getAtRandom(rand);
+	}
+
+	@Override
+	public IFuture<?> onTurn(Random rand) {
+		return null;
 	}
 	
 }

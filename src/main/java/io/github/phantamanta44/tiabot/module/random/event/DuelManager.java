@@ -5,9 +5,11 @@ import java.io.File;
 import java.io.FileReader;
 import java.util.Map;
 import java.util.Random;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 import io.github.phantamanta44.tiabot.core.ICTListener;
 import io.github.phantamanta44.tiabot.core.context.IEventContext;
@@ -21,7 +23,7 @@ public class DuelManager implements ICTListener {
 	private static final File DUEL_FILE = new File("duel.txt");
 	private static final ChanceList<String> words = new ChanceList<>();
 	
-	private static Timer taskTimer = new Timer();
+	private static ScheduledExecutorService taskPool = Executors.newSingleThreadScheduledExecutor();
 	private static Map<String, Duel> duels = new ConcurrentHashMap<>();
 	
 	public DuelManager() {
@@ -74,18 +76,13 @@ public class DuelManager implements ICTListener {
 		private IEventContext ctx;
 		private IUser a, b;
 		private String target;
-		private TimerTask cancelTask;
+		private ScheduledFuture<?> cancelFuture;
 		
 		public Duel(IUser a, IUser b, IEventContext eventContext) {
 			this.a = a;
 			this.b = b;
 			this.ctx = eventContext;
-			taskTimer.schedule(new TimerTask() {
-				@Override
-				public void run() {
-					start();
-				}
-			}, 3000L + rand.nextInt(2000));
+			taskPool.schedule(() -> start(), 3000L + rand.nextInt(2000), TimeUnit.MILLISECONDS);
 			state = DuelState.PREPARING;
 		}
 		
@@ -93,15 +90,11 @@ public class DuelManager implements ICTListener {
 			target = words.getAtRandom(rand);
 			state = DuelState.ACTIVE;
 			ctx.sendMessage("**You have 10 seconds to type \"%s\"!**", target);
-			cancelTask = new TimerTask() {
-				@Override
-				public void run() {
-					state = DuelState.INACTIVE;
-					ctx.sendMessage("**1v1 cancelled.**");
-					cancelDuel(ctx.getChannel().getID());
-				}
-			};
-			taskTimer.schedule(cancelTask, 10000L);
+			cancelFuture = taskPool.schedule(() -> {
+				state = DuelState.INACTIVE;
+				ctx.sendMessage("**1v1 cancelled.**");
+				cancelDuel(ctx.getChannel().getID());
+			}, 10000L, TimeUnit.MILLISECONDS);
 		}
 		
 		public void update(IUser sender, String msg) {
@@ -110,7 +103,7 @@ public class DuelManager implements ICTListener {
 					&& msg.equalsIgnoreCase(target)) {
 				ctx.sendMessage("**%s wins the 1v1!**", sender.mention());
 				state = DuelState.INACTIVE;
-				cancelTask.cancel();
+				cancelFuture.cancel(true);
 				cancelDuel(ctx.getChannel().getID());
 			}
 		}

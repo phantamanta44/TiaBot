@@ -3,8 +3,8 @@ package io.github.phantamanta44.tiabot.module.encounter.data;
 import java.util.function.Consumer;
 
 import io.github.phantamanta44.tiabot.module.encounter.data.EncounterDamage.Element;
-import io.github.phantamanta44.tiabot.module.encounter.data.abst.IDamageable;
 import io.github.phantamanta44.tiabot.module.encounter.data.abst.IModifierSusceptible;
+import io.github.phantamanta44.tiabot.module.encounter.data.abst.ITargetable;
 
 public class EncounterEffect implements IModifierSusceptible {
 
@@ -30,7 +30,7 @@ public class EncounterEffect implements IModifierSusceptible {
 		return type.defMod;
 	}
 
-	public boolean proc(IDamageable target) {
+	public boolean proc(ITargetable target) {
 		type.effect.accept(target);
 		return --ttl <= 0;
 	}
@@ -41,16 +41,18 @@ public class EncounterEffect implements IModifierSusceptible {
 		BURN(0, 0, t -> new EncounterDamage(100, Element.FIRE).dealTo(t)),
 		FREEZE(0, 0, t -> new EncounterDamage(35, Element.ICE).dealTo(t)),
 		SHOCK(0, 0, t -> new EncounterDamage(20, Element.ENERGY).dealTo(t)),
-		REND(0, -15, t -> new EncounterDamage(50, Element.TRUE).dealTo(t)),
+		CLEAVE(0, -15, t -> new EncounterDamage(45, Element.TRUE).dealTo(t)),
+		RADIANCE(-15, 0, t -> new EncounterDamage(50, Element.LIGHT).dealTo(t)),
+		REND(0, -25, t -> {}),
 		STUN(0, 0, t -> {}),
 		SILENCE(0, 0, t -> {}),
 		SHIELD(0, 20, t -> {}),
 		WRATH(30, 0, t -> {});
 		
 		public final int atkMod, defMod;
-		public final Consumer<IDamageable> effect;
+		public final Consumer<ITargetable> effect;
 		
-		private EffectType(int aM, int dM, Consumer<IDamageable> eff) {
+		private EffectType(int aM, int dM, Consumer<ITargetable> eff) {
 			atkMod = aM;
 			defMod = dM;
 			effect = eff;

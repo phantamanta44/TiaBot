@@ -6,13 +6,14 @@ import java.util.List;
 import io.github.phantamanta44.tiabot.TiaBot;
 import io.github.phantamanta44.tiabot.core.command.ICommand;
 import io.github.phantamanta44.tiabot.core.context.IEventContext;
+import io.github.phantamanta44.tiabot.module.encounter.EncounterData;
 import sx.blah.discord.handle.obj.IUser;
 
-public class CommandEncounter implements ICommand {
+public class CommandEncSave implements ICommand {
 	
 	@Override
 	public String getName() {
-		return "encounter";
+		return "encsave";
 	}
 
 	@Override
@@ -22,18 +23,18 @@ public class CommandEncounter implements ICommand {
 
 	@Override
 	public String getDesc() {
-		return "Begin a random encounter event.";
+		return "Save the encounter database, overwriting the current data files.";
 	}
 
 	@Override
 	public String getUsage() {
-		return "encounter [boss]";
+		return "encsave";
 	}
 
 	@Override
 	public void execute(IUser sender, String[] args, IEventContext ctx) {
-		// EncounterHandler.procCmd(sender, args, ctx);
-		ctx.sendMessage("No implementation!");
+		EncounterData.save();
+		ctx.sendMessage("Data Saved.");
 	}
 
 	@Override
@@ -48,7 +49,7 @@ public class CommandEncounter implements ICommand {
 	
 	@Override
 	public String getEnglishInvocation() {
-		return ".*(?:start|begin) a (?:(?:boss ?)?fight|random encounter)(?:(?: with| against) (?:a )?(?<a0>\\S+))?.*";
+		return null;
 	}
 
 }

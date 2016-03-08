@@ -11,7 +11,7 @@ import io.github.phantamanta44.tiabot.util.SafeJsonWrapper;
 
 public class EncounterItem implements IModifierSusceptible, ICriticalChance, ISerializable {
 
-	private String name, desc;
+	private String name, id, desc;
 	private int atk, def, ap, health;
 	private double crit, critDmg;
 	private double lifeSteal;
@@ -19,7 +19,8 @@ public class EncounterItem implements IModifierSusceptible, ICriticalChance, ISe
 	private int mana, manaGen;
 	private String passive, active;
 	
-	public EncounterItem(JsonObject dto) {
+	public EncounterItem(String itemId, JsonObject dto) {
+		id = itemId;
 		SafeJsonWrapper data = new SafeJsonWrapper(dto);
 		SafeJsonWrapper stats = data.getJsonObject("stats");
 		SafeJsonWrapper props = data.getJsonObject("props");
@@ -133,6 +134,10 @@ public class EncounterItem implements IModifierSusceptible, ICriticalChance, ISe
 	
 	public void procActive(BattleContext ctx, StatsDto stats) {
 		EncounterScript.execute(active, ctx.getContext(), ctx, stats);
+	}
+
+	public String getId() {
+		return id;
 	}
 
 }
