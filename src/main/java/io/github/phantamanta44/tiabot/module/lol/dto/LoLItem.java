@@ -2,6 +2,7 @@ package io.github.phantamanta44.tiabot.module.lol.dto;
 
 import com.google.gson.JsonObject;
 
+import io.github.phantamanta44.tiabot.module.lol.LoLModule;
 import io.github.phantamanta44.tiabot.util.SafeJsonWrapper;
 
 public class LoLItem {
@@ -9,7 +10,7 @@ public class LoLItem {
 	public static final LoLItem NONE = new LoLItem();
 	
 	private int id;
-	private String name, desc, group;
+	private String name, desc, statDesc, group;
 	private int costBuy, costSell, costComb;
 	private String icon;
 	
@@ -18,18 +19,23 @@ public class LoLItem {
 		SafeJsonWrapper cost = data.getJsonObject("gold");
 		id = data.getInt("id");
 		name = data.getString("name");
-		desc = data.getString("sanitizedDescription");
+		desc = data.getString("plaintext");
+		statDesc = data.getString("description")
+				.replaceAll("<br>", "\n")
+				.replaceAll("</?(?:unique|passive|aura|active)>", "**")
+				.replaceAll("</?grouplimit>", "*")
+				.replaceAll("</?\\w+(?: \\S+=\\S+)*/?>", "");
 		group = data.getString("group");
 		costBuy = cost.getInt("total");
 		costSell = cost.getInt("sell");
 		costComb = cost.getInt("base");
-		icon = data.getJsonObject("image").getString("full");
+		icon = LoLModule.dataDragon("img/item/" + data.getJsonObject("image").getString("full"));
 	}
 	
 	private LoLItem() {
-		name = "Nothing";
+		name = "None";
 		id = costBuy = costSell = costComb = 0;
-		desc = group = icon = "";
+		statDesc = group = icon = "";
 	}
 
 	public int getId() {
@@ -39,9 +45,13 @@ public class LoLItem {
 	public String getName() {
 		return name;
 	}
-
+	
 	public String getDescription() {
 		return desc;
+	}
+
+	public String getStats() {
+		return statDesc;
 	}
 
 	public String getGroup() {

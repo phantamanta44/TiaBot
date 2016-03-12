@@ -2,7 +2,9 @@ package io.github.phantamanta44.tiabot.module.lol;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -13,23 +15,33 @@ import com.google.gson.JsonParser;
 
 import io.github.phantamanta44.tiabot.TiaBot;
 import io.github.phantamanta44.tiabot.module.CTModule;
-import io.github.phantamanta44.tiabot.module.lol.command.CommandLoLGames;
+import io.github.phantamanta44.tiabot.module.lol.command.CommandLoLChamp;
+import io.github.phantamanta44.tiabot.module.lol.command.CommandLoLGame;
+import io.github.phantamanta44.tiabot.module.lol.command.CommandLoLItem;
 import io.github.phantamanta44.tiabot.module.lol.dto.LoLChampion;
 import io.github.phantamanta44.tiabot.module.lol.dto.LoLGame;
 import io.github.phantamanta44.tiabot.module.lol.dto.LoLItem;
 import io.github.phantamanta44.tiabot.module.lol.dto.LoLRegion;
 import io.github.phantamanta44.tiabot.module.lol.dto.LoLSummoner;
+import io.github.phantamanta44.tiabot.util.MessageUtils;
 import sx.blah.discord.util.Requests;
 
 public class LoLModule extends CTModule {
 
+	private static final String DATA_DRAGON = "http://ddragon.leagueoflegends.com/cdn/6.5.1/";
 	private static final String SUMM_BY_NAME = "https://%1$s.api.pvp.net/api/lol/%1$s/v1.4/summoner/by-name/%2$s";
 	private static final String RECENTS_BY_SUMM = "https://%1$s.api.pvp.net/api/lol/%1$s/v1.3/game/by-summoner/%2$s/recent";
-	private static final String ITEM_BY_ID = "https://global.api.pvp.net/api/lol/static-data/%s/v1.2/item/%s";
-	private static final String CHAMP_BY_ID = "https://global.api.pvp.net/api/lol/static-data/%s/v1.2/champion/%s";
+	private static final String ITEM_LIST = "https://global.api.pvp.net/api/lol/static-data/%s/v1.2/item";
+	private static final String CHAMP_LIST = "https://global.api.pvp.net/api/lol/static-data/%s/v1.2/champion";
+	
+	private static final Map<Integer, LoLItem> itemMap = new HashMap<>();
+	private static final Map<String, LoLChampion> champMap = new HashMap<>();
 	
 	public LoLModule() {
-		commands.add(new CommandLoLGames());
+		commands.add(new CommandLoLGame());
+		commands.add(new CommandLoLItem());
+		commands.add(new CommandLoLChamp());
+		loadStaticData(LoLRegion.NA);
 	}
 	
 	@Override
@@ -44,11 +56,34 @@ public class LoLModule extends CTModule {
 		return key;
 	}
 	
-	@SuppressWarnings("unchecked")
 	private static <T extends JsonElement> T requestFromApi(String reqUrl) throws Exception {
+		return requestFromApi(reqUrl, "");
+	}
+	
+	@SuppressWarnings("unchecked")
+	private static <T extends JsonElement> T requestFromApi(String reqUrl, String args) throws Exception {
 		JsonParser parser = new JsonParser();
-		String withKey = String.format("%s?api_key=%s", reqUrl, getApiKey());
+		String withKey = String.format("%s?api_key=%s%s", reqUrl, getApiKey(), args);
 		return (T)parser.parse(Requests.GET.makeRequest(withKey));
+	}
+	
+	private static void loadStaticData(LoLRegion rg) {
+		TiaBot.logger.info("Loading LoL static data...");
+		try {
+			String itemUrl = String.format(ITEM_LIST, rg);
+			JsonObject itemJson = requestFromApi(itemUrl, "&itemListData=all");
+			itemJson.get("data").getAsJsonObject().entrySet().forEach(i ->
+					itemMap.put(Integer.parseInt(i.getKey()), new LoLItem(i.getValue().getAsJsonObject()))
+					);
+			String champUrl = String.format(CHAMP_LIST, rg);
+			JsonObject champJson = requestFromApi(champUrl, "&champData=image,info,spells,passive,stats");
+			champJson.get("data").getAsJsonObject().entrySet().forEach(i ->
+					champMap.put(i.getKey(), new LoLChampion(i.getValue().getAsJsonObject()))
+					);
+		} catch (Exception ex) {
+			TiaBot.logger.warn("Error retrieving LoL static data!");
+			ex.printStackTrace();
+		}
 	}
 	
 	public static LoLSummoner getSummoner(LoLRegion region, String name) {
@@ -99,27 +134,29 @@ public class LoLModule extends CTModule {
 	public static LoLItem getItem(LoLRegion rg, int id) {
 		if (id == 0)
 			return LoLItem.NONE;
-		try {
-			String reqUrl = String.format(ITEM_BY_ID, rg, id);
-			JsonObject response = requestFromApi(reqUrl);
-			return new LoLItem(response);
-		} catch (Exception ex) {
-			TiaBot.logger.warn("Error retrieving LoL item!");
-			ex.printStackTrace();
-			return null;
-		}
+		return itemMap.get(id);
+	}
+	
+	public static LoLItem getItem(String name) {
+		return itemMap.values().stream()
+				.filter(i -> MessageUtils.lenientMatch(i.getName(), name))
+				.findAny().orElse(LoLItem.NONE);
 	}
 
 	public static LoLChampion getChampion(LoLRegion rg, int id) {
-		try {
-			String reqUrl = String.format(CHAMP_BY_ID, rg, id);
-			JsonObject response = requestFromApi(reqUrl);
-			return new LoLChampion(response);
-		} catch (Exception ex) {
-			TiaBot.logger.warn("Error retrieving LoL champion!");
-			ex.printStackTrace();
-			return null;
-		}
+		return champMap.get(id);
+	}
+	
+	public static LoLChampion getChampion(String name) {
+		return champMap.entrySet().stream()
+				.filter(e -> MessageUtils.lenientMatch(e.getValue().getName(), name)
+						|| MessageUtils.lenientMatch(e.getKey(), name))
+				.map(e -> e.getValue())
+				.findAny().orElse(null);
+	}
+
+	public static String dataDragon(String ept) {
+		return DATA_DRAGON + ept;
 	}
 
 }

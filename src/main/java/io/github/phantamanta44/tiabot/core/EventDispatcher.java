@@ -49,12 +49,14 @@ public class EventDispatcher {
 			Method listenerMethod;
 			HandlerSignature handlerSig = handlerSigMap.get(listener.getClass());
 			if ((listenerMethod = handlerSig.listenerMethods.get(eventType)) != null) {
-				try {
-					executor.submit(() -> listenerMethod.invoke(listener, event, getContext(event)));
-				} catch (Exception e) {
-					TiaBot.logger.severe("Event handling error!");
-					e.printStackTrace();
-				}
+				executor.submit(() -> {
+					try {
+						listenerMethod.invoke(listener, event, getContext(event));
+					} catch (Exception ex) {
+						TiaBot.logger.severe("Event handling error!");
+						ex.printStackTrace();							
+					}
+				});
 			}
 		}
 	}

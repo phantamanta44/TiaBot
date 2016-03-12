@@ -16,14 +16,14 @@ import io.github.phantamanta44.tiabot.module.lol.dto.LoLSummoner;
 import io.github.phantamanta44.tiabot.util.MessageUtils;
 import sx.blah.discord.handle.obj.IUser;
 
-public class CommandLoLGames implements ICommand {
+public class CommandLoLGame implements ICommand {
 	
 	private static final String RESULT_FORMAT = "%s\n```[%s] %s\nLength: %s\nGamemode: %s\nChampion: %s\nLevel: %s\nKDA: %s/%s/%s\nCreep Score: %s\nGold Earned: %s\nItems: %s```";
 	private static final DateFormat EPOCH_FORMAT = new SimpleDateFormat("yyyy-dd-mm, HH:mm:ss");
 	
 	@Override
 	public String getName() {
-		return "lolgames";
+		return "lolgame";
 	}
 
 	@Override
@@ -38,7 +38,7 @@ public class CommandLoLGames implements ICommand {
 
 	@Override
 	public String getUsage() {
-		return "lolgames <region> <summoner> [index]";
+		return "lolgame <region> <summoner> [index]";
 	}
 
 	@Override

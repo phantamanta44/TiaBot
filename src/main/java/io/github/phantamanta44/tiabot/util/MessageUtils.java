@@ -48,4 +48,10 @@ public class MessageUtils {
 		return b.append(seconds).append(" Seconds").toString();
 	}
 	
+	public static boolean lenientMatch(String matcher, String toTest) {
+		return matcher.equalsIgnoreCase(toTest)
+				|| matcher.replaceAll("\\s", "").equalsIgnoreCase(toTest)
+				|| matcher.replaceAll("\\W", "").equalsIgnoreCase(toTest);
+	}
+	
 }
