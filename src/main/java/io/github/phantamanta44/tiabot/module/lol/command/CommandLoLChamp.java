@@ -7,15 +7,16 @@ import io.github.phantamanta44.tiabot.core.command.ICommand;
 import io.github.phantamanta44.tiabot.core.context.IEventContext;
 import io.github.phantamanta44.tiabot.module.lol.LoLModule;
 import io.github.phantamanta44.tiabot.module.lol.dto.LoLChampion;
-import io.github.phantamanta44.tiabot.module.lol.dto.LoLChampion.ChampInfo;
 import io.github.phantamanta44.tiabot.module.lol.dto.LoLChampion.ChampPassive;
+import io.github.phantamanta44.tiabot.module.lol.dto.LoLChampion.ChampSpell;
+import io.github.phantamanta44.tiabot.module.lol.dto.LoLChampion.ChampSpell.SpellKey;
 import io.github.phantamanta44.tiabot.util.MessageUtils;
 import sx.blah.discord.handle.obj.IUser;
 
 public class CommandLoLChamp implements ICommand {
 	
 	private static final List<String> ALIASES = Arrays.asList(new String[] {"lolchampion"});
-	private static final String RESULT_FORMAT = "**League of Legends Champion Profile:**\n**%s**\n*%s*\n\n```Tank: [%s]\nAtk : [%s]\nAP  : [%s]\nDiff: [%s]```\n**Passive: %s**\n\n%s\n%s%s";
+	private static final String RESULT_FORMAT = "**League of Legends Champion Profile:**\n**%s**\n*%s*\n\n**Passive: %s**\n%s\n\n%s%s";
 	
 	@Override
 	public String getName() {
@@ -48,22 +49,22 @@ public class CommandLoLChamp implements ICommand {
 			ctx.sendMessage("No such champion!");
 			return;
 		}
-		
-		ChampInfo info = champ.getRating();
-		StringBuffer atk = new StringBuffer(), ap = new StringBuffer(), hp = new StringBuffer(), diff = new StringBuffer();
-		for (int i = 1; i <= 10; i++) {
-			if (info.atk >= i) atk.append("\u25b0");
-			if (info.ap >= i) ap.append("\u25b0");
-			if (info.def >= i) hp.append("\u25b0");
-			if (info.diff >= i) diff.append("\u25b0");
-		}
 		ChampPassive passive = champ.getPassive();
-		String spells = Arrays.stream(champ.getSpells())
-				.map(s -> String.format("**%s** *(%s)*\n%s\n\n", s.name, s.getCostFormatted(), s.getTooltipFormatted()))
+		List<ChampSpell> spellList = Arrays.asList(champ.getSpells());
+		String spells = spellList.stream()
+				.map(s -> String.format("**%s: %s** *(%s)*\n%s\n\n", SpellKey.values()[spellList.indexOf(s)], s.name, s.getCostFormatted(), s.getTooltipFormatted()))
 				.reduce((a, b) -> a.concat(b)).orElse("No Spells");
-		ctx.sendMessage(String.format(RESULT_FORMAT,
-				champ.getName(), champ.getTitle(),
-				hp, atk, ap, diff, passive.name, passive.desc, spells, champ.getIcon()));
+		String msg = String.format(RESULT_FORMAT, champ.getName(), MessageUtils.capitalize(champ.getTitle()), passive.name, passive.desc, spells, champ.getIcon());
+		if (msg.length() < 2000)
+			ctx.sendMessage(msg);
+		else {
+			int ind = 0, temp;
+			while (ind >= 0 && (temp = msg.indexOf("\n\n", ind + 1)) < 2000)
+				ind = temp;
+			int splitInd = ind == -1 ? 1999 : ind;
+			ctx.sendMessage(msg.substring(0, splitInd));
+			ctx.sendMessage(msg.substring(splitInd + 1));
+		}
 	}
 
 	@Override
@@ -78,7 +79,7 @@ public class CommandLoLChamp implements ICommand {
 	
 	@Override
 	public String getEnglishInvocation() {
-		return ".*(?:what|who is the) (?:lol |league of legends) champ(?:ion)? is (?<a0>(?:[A-Za-z']+)(?: [A-Za-z']+)?).*";
+		return ".*(?:what|who is(?: the)?) (?:lol|league of legends) champ(?:ion)?(:? is)? (?<a0>(?:[A-Za-z']+)(?: [A-Za-z']+)?).*";
 	}
 
 }

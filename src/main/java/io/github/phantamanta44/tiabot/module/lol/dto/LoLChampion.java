@@ -120,7 +120,7 @@ public class LoLChampion {
 			dto.getJsonArray("vars").forEach(o -> {
 				SpellArg var = new SpellArg(new SafeJsonWrapper(o.getAsJsonObject()));
 				vars.put(var.key, var);
-			});	
+			});
 		}
 		
 		public String getCostFormatted() {
@@ -159,7 +159,7 @@ public class LoLChampion {
 			SpellArg var = vars.get(key);
 			if (var == null)
 				return "<var error>";
-			return String.format("%s%% %s", var.coeffs[0] * 100D, varLinkMap.get(var.link));
+			return String.format("%.0f%% %s", var.coeffs[0] * 100D, varLinkMap.get(var.link));
 		}
 		
 		public static class SpellArg {

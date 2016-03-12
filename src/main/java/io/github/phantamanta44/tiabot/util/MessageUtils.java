@@ -53,5 +53,11 @@ public class MessageUtils {
 				|| matcher.replaceAll("\\s", "").equalsIgnoreCase(toTest)
 				|| matcher.replaceAll("\\W", "").equalsIgnoreCase(toTest);
 	}
+
+	public static String capitalize(String str) {
+		if (str.length() < 1)
+			return str;
+		return Character.toUpperCase(str.charAt(0)) + str.substring(1);
+	}
 	
 }

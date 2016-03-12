@@ -8,6 +8,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import io.github.phantamanta44.tiabot.TiaBot;
 import io.github.phantamanta44.tiabot.core.ICTListener.ListenTo;
@@ -30,6 +33,7 @@ public class EventDispatcher {
 	private static final Map<Class<? extends ICTListener>, HandlerSignature> handlerSigMap = new ConcurrentHashMap<>();
 	private static final List<ICTListener> handlers = new CopyOnWriteArrayList<>();
 	private static final ExecutorService executor = Executors.newCachedThreadPool();
+	private static final ScheduledExecutorService taskPool = Executors.newSingleThreadScheduledExecutor();
 	
 	public static void registerHandler(ICTListener handler) {
 		handlers.add(handler);
@@ -49,14 +53,20 @@ public class EventDispatcher {
 			Method listenerMethod;
 			HandlerSignature handlerSig = handlerSigMap.get(listener.getClass());
 			if ((listenerMethod = handlerSig.listenerMethods.get(eventType)) != null) {
-				executor.submit(() -> {
+				final Future<?> eventFuture = executor.submit(() -> {
 					try {
 						listenerMethod.invoke(listener, event, getContext(event));
 					} catch (Exception ex) {
 						TiaBot.logger.severe("Event handling error!");
-						ex.printStackTrace();							
+						ex.printStackTrace();
 					}
 				});
+				taskPool.schedule(() -> {
+					if (!eventFuture.isDone()) {
+						eventFuture.cancel(true);
+						TiaBot.logger.warn("Executor task timed out! Location: %s#%s", listener.getClass().getName(), listenerMethod.getName());
+					}
+				}, 15000L, TimeUnit.MILLISECONDS);
 			}
 		}
 	}
