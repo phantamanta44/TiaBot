@@ -12,5 +12,15 @@ public class ScriptModule extends CTModule {
 	public String getName() {
 		return "scripting";
 	}
+
+	@Override
+	public String getDesc() {
+		return "Provides a means of scripting at runtime.";
+	}
+
+	@Override
+	public String getAuthor() {
+		return "Phanta";
+	}
 	
 }

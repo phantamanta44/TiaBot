@@ -43,8 +43,12 @@ public class CommandModToggle implements ICommand {
 		}
 		String id = args[0].toLowerCase();
 		boolean newState = !ModuleManager.isEnabled(id);
-		ModuleManager.setState(id, newState);
-		ctx.sendMessage("%s the %s module.", newState ? "Enabled" : "Disabled", id.toLowerCase());
+		try {
+			ModuleManager.setState(id, newState);
+			ctx.sendMessage("%s the %s module.", newState ? "Enabled" : "Disabled", id.toLowerCase());
+		} catch (UnsupportedOperationException ex) {
+			ctx.sendMessage("This module cannot be toggled!");
+		}
 	}
 
 	@Override

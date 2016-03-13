@@ -49,6 +49,16 @@ public class LoLModule extends CTModule {
 		return "lol";
 	}
 	
+	@Override
+	public String getDesc() {
+		return "Provides commands for looking up League of Legends data.";
+	}
+
+	@Override
+	public String getAuthor() {
+		return "Phanta";
+	}
+	
 	public static String getApiKey() {
 		String key = TiaBot.config.get("riotApiKey");
 		if (key == null)

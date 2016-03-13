@@ -1,6 +1,7 @@
 package io.github.phantamanta44.tiabot.module;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import io.github.phantamanta44.tiabot.core.EventDispatcher;
@@ -15,6 +16,10 @@ public abstract class CTModule {
 	
 	public abstract String getName();
 	
+	public abstract String getDesc();
+	
+	public abstract String getAuthor();
+	
 	public void onEnable() {
 		commands.forEach(c -> CommandDispatcher.registerCommand(c));
 		listeners.forEach(l -> EventDispatcher.registerHandler(l));
@@ -23,6 +28,14 @@ public abstract class CTModule {
 	public void onDisable() {
 		commands.forEach(c -> CommandDispatcher.unregisterCommand(c));
 		listeners.forEach(l -> EventDispatcher.unregisterHandler(l));
+	}
+	
+	public final Collection<ICommand> getCommands() {
+		return commands;
+	}
+	
+	public final Collection<ICTListener> getListeners() {
+		return listeners;
 	}
 	
 }

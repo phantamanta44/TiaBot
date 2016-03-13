@@ -22,5 +22,15 @@ public class RandomModule extends CTModule {
 	public String getName() {
 		return "random";
 	}
+	
+	@Override
+	public String getDesc() {
+		return "Provides various random features for entertainment.";
+	}
+
+	@Override
+	public String getAuthor() {
+		return "Phanta";
+	}
 
 }

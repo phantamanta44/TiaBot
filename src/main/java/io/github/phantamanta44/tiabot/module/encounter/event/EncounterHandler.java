@@ -127,21 +127,22 @@ public class EncounterHandler implements ICTListener {
 			task.cancel(true);
 			partInd = (partInd + 1) % turns.length;
 			ITurnable turn = turns[partInd];
-			turnStatus = turn.onTurn(rand);
+			turnStatus = turn.onTurn(ctx, rand);
 			turnStatus.dispatch();
-			task = taskPool.schedule(() -> {
-				ctx.sendMessage("%s's turn was skipped because they didn't act fast enough.", turn.getName());
-				turnSwap();
-			}, 30000L, TimeUnit.MILLISECONDS);
+			if (turnStatus.isDone())
+				taskPool.schedule(() -> turnSwap(), 2700L, TimeUnit.MILLISECONDS);
+			else {
+				task = taskPool.schedule(() -> {
+					ctx.sendMessage("%s's turn was skipped because they didn't act fast enough.", turn.getName());
+					turnSwap();
+				}, 30000L, TimeUnit.MILLISECONDS);
+			}
 		}
 		
 		private void cancel() {
+			task.cancel(true);
 			engaged.removeAll(Arrays.asList(parts));
 			inProg.remove(ctx.getChannel().getID());
-		}
-
-		public boolean canJoin() {
-			return state == EncounterState.WAIT;
 		}
 		
 	}

@@ -40,7 +40,7 @@ public class TiaBot {
 	
 	private static void registerModules() {
 		setPrefix(config.get("prefix"));
-		new CoreModule().onEnable();
+		ModuleManager.registerModule(new CoreModule(), true);
 		ModuleManager.registerModule(new RandomModule(), config.getBoolean("mod.random"));
 		ModuleManager.registerModule(new ScriptModule(), config.getBoolean("mod.scripting"));
 		ModuleManager.registerModule(new LoLModule(), config.getBoolean("mod.lol"));

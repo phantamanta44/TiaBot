@@ -46,6 +46,14 @@ public class ModuleManager {
 	public static boolean isModule(String id) {
 		return modMap.containsKey(id);
 	}
+	
+	public static CTModule getModule(String id) {
+		return modMap.get(id);
+	}
+	
+	public static Stream<Entry<String, CTModule>> streamModules() {
+		return modMap.entrySet().stream();
+	}
 
 	public static Stream<Entry<String, MutableBoolean>> streamStatus() {
 		return status.entrySet().stream();
@@ -54,8 +62,10 @@ public class ModuleManager {
 	public static void onShutdown() {
 		try {
 			modMap.forEach((k, v) -> {
-				if (isEnabled(k))
-					v.onDisable();
+				try {
+					if (isEnabled(k))
+						v.onDisable();
+				} catch (UnsupportedOperationException ex) { }
 			});
 		} catch (Exception ex) {
 			ex.printStackTrace();

@@ -7,6 +7,7 @@ import java.util.Random;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
+import io.github.phantamanta44.tiabot.core.context.IEventContext;
 import io.github.phantamanta44.tiabot.module.encounter.EncounterData;
 import io.github.phantamanta44.tiabot.module.encounter.data.EncounterDamage.Element;
 import io.github.phantamanta44.tiabot.module.encounter.data.abst.ITurnable;
@@ -149,7 +150,7 @@ public class EncounterBoss implements ITurnable, ISerializable, Cloneable {
 	}
 
 	@Override
-	public IFuture<?> onTurn(Random rand) {
+	public IFuture<?> onTurn(IEventContext ctx, Random rand) {
 		return null;
 	}
 	

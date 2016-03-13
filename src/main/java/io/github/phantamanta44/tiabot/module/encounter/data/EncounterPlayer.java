@@ -10,10 +10,12 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
 import io.github.phantamanta44.tiabot.Discord;
+import io.github.phantamanta44.tiabot.core.context.IEventContext;
 import io.github.phantamanta44.tiabot.module.encounter.EncounterData;
 import io.github.phantamanta44.tiabot.module.encounter.data.EncounterDamage.Element;
 import io.github.phantamanta44.tiabot.module.encounter.data.abst.ICriticalChance;
 import io.github.phantamanta44.tiabot.module.encounter.data.abst.ITurnable;
+import io.github.phantamanta44.tiabot.module.encounter.data.abst.TurnFuture;
 import io.github.phantamanta44.tiabot.util.IFuture;
 import io.github.phantamanta44.tiabot.util.ISerializable;
 import io.github.phantamanta44.tiabot.util.MathUtils;
@@ -269,11 +271,6 @@ public class EncounterPlayer implements ITurnable, ICriticalChance, ISerializabl
 	public IUser getUser() {
 		return Discord.getInstance().getUserById(userId);
 	}
-	
-	@Override
-	public IFuture<?> onTurn(Random rand) {
-		return null;
-	}
 
 	public List<EncounterItem> getInv() {
 		return inv;
@@ -289,6 +286,13 @@ public class EncounterPlayer implements ITurnable, ICriticalChance, ISerializabl
 	
 	public StatsDto getBaseStats() {
 		return new StatsDto(baseAtk, baseDef, baseAp, hp, baseHp, 0D, 2D, 0D, 0D, mana, baseMana, baseManaGen);
+	}
+	
+	@Override
+	public IFuture<?> onTurn(IEventContext ctx, Random rand) {
+		return new TurnFuture(() -> {
+			
+		});
 	}
 
 }

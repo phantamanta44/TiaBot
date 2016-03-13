@@ -34,5 +34,15 @@ public class EncounterModule extends CTModule {
 	public String getName() {
 		return "encounter";
 	}
+	
+	@Override
+	public String getDesc() {
+		return "An RPG-like turn-based game.";
+	}
+
+	@Override
+	public String getAuthor() {
+		return "Phanta";
+	}
 
 }
