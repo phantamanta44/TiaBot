@@ -16,7 +16,7 @@ import sx.blah.discord.handle.obj.IUser;
 public class CommandLoLChamp implements ICommand {
 	
 	private static final List<String> ALIASES = Arrays.asList(new String[] {"lolchampion"});
-	private static final String RESULT_FORMAT = "**League of Legends Champion Profile:**\n**%s**\n*%s*\n\n**Passive: %s**\n%s\n\n%s%s";
+	private static final String RESULT_FORMAT = "__**League of Legends Champion Profile:**__\n**%s**\n*%s*\n\n**Passive: %s**\n%s\n\n%s%s";
 	
 	@Override
 	public String getName() {

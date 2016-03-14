@@ -13,7 +13,7 @@ import sx.blah.discord.handle.obj.IUser;
 
 public class CommandLoLItem implements ICommand {
 	
-	private static final String RESULT_FORMAT = "**League of Legends Item Profile:**\n**%s**\n*%s*\n\n%sg / %sg Crafted\n\n%s\n%s";
+	private static final String RESULT_FORMAT = "__**League of Legends Item Profile:**__\n**%s**\n*%s*\n\n%sg / %sg Crafted\n\n%s\n%s";
 	
 	@Override
 	public String getName() {
