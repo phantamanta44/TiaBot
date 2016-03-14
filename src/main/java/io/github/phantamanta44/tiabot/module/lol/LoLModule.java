@@ -35,7 +35,7 @@ public class LoLModule extends CTModule {
 	private static final String CHAMP_LIST = "https://global.api.pvp.net/api/lol/static-data/%s/v1.2/champion";
 	
 	private static final Map<Integer, LoLItem> itemMap = new HashMap<>();
-	private static final Map<String, LoLChampion> champMap = new HashMap<>();
+	private static final Map<Integer, LoLChampion> champMap = new HashMap<>();
 	
 	public LoLModule() {
 		commands.add(new CommandLoLGame());
@@ -87,9 +87,10 @@ public class LoLModule extends CTModule {
 					);
 			String champUrl = String.format(CHAMP_LIST, rg);
 			JsonObject champJson = requestFromApi(champUrl, "&champData=image,info,spells,passive,stats");
-			champJson.get("data").getAsJsonObject().entrySet().forEach(i ->
-					champMap.put(i.getKey(), new LoLChampion(i.getValue().getAsJsonObject()))
-					);
+			champJson.get("data").getAsJsonObject().entrySet().forEach(i -> {
+				LoLChampion champ = new LoLChampion(i.getValue().getAsJsonObject());
+				champMap.put(champ.getId(), champ);
+			});
 		} catch (Exception ex) {
 			TiaBot.logger.warn("Error retrieving LoL static data!");
 			ex.printStackTrace();
@@ -159,8 +160,7 @@ public class LoLModule extends CTModule {
 	
 	public static LoLChampion getChampion(String name) {
 		return champMap.entrySet().stream()
-				.filter(e -> MessageUtils.lenientMatch(e.getValue().getName(), name)
-						|| MessageUtils.lenientMatch(e.getKey(), name))
+				.filter(e -> MessageUtils.lenientMatch(e.getValue().getName(), name))
 				.map(e -> e.getValue())
 				.findAny().orElse(null);
 	}

@@ -29,7 +29,7 @@ public class CommandEngInvoc implements ICommand {
 
 	@Override
 	public String getUsage() {
-		return "enginvoc [command]";
+		return "enginvoc <command>";
 	}
 
 	@Override
