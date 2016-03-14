@@ -6,15 +6,17 @@ import io.github.phantamanta44.tiabot.util.IFuture;
 public class TurnFuture implements IFuture {
 
 	protected boolean done;
-	private Runnable callback;
+	private Runnable func, cb;
 	
 	public TurnFuture(Runnable func) {
-		this.callback = func;
+		this.func = func;
 	}
 	
 	@Override
 	public void dispatch() {
-		this.callback.run();
+		this.func.run();
+		this.done = true;
+		cb.run();
 	}
 
 	@Override
@@ -25,6 +27,13 @@ public class TurnFuture implements IFuture {
 	@Override
 	public Object getResult() {
 		throw new UnsupportedOperationException();
+	}
+
+	public void promise(Runnable callback) {
+		if (done)
+			callback.run();
+		else
+			this.cb = callback;
 	}
 
 }

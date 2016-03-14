@@ -35,6 +35,14 @@ public class EncounterEffect implements IModifierSusceptible {
 		return --ttl <= 0;
 	}
 	
+	public EffectType getType() {
+		return type;
+	}
+	
+	public int getDuration() {
+		return ttl;
+	}
+	
 	public static enum EffectType {
 		
 		POISON(0, 0, t -> new EncounterDamage(80, Element.POISON).dealTo(t)),

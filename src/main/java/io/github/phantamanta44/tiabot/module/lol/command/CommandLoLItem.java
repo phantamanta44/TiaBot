@@ -71,7 +71,7 @@ public class CommandLoLItem implements ICommand {
 	
 	@Override
 	public String getEnglishInvocation() {
-		return ".*what (?:lol|league of legends) item is (?<a0>(?:[A-Za-z']+)(?: [A-Za-z']+)?).*";
+		return ".*what (?:lol|league of legends) item is (?<a0>(?:[A-Za-z']+)(?: [A-Za-z']+)*).*";
 	}
 
 }

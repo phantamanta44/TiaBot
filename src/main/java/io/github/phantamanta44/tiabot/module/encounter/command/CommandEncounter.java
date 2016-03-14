@@ -6,6 +6,7 @@ import java.util.List;
 import io.github.phantamanta44.tiabot.TiaBot;
 import io.github.phantamanta44.tiabot.core.command.ICommand;
 import io.github.phantamanta44.tiabot.core.context.IEventContext;
+import io.github.phantamanta44.tiabot.module.encounter.event.EncounterHandler;
 import sx.blah.discord.handle.obj.IUser;
 
 public class CommandEncounter implements ICommand {
@@ -27,13 +28,12 @@ public class CommandEncounter implements ICommand {
 
 	@Override
 	public String getUsage() {
-		return "encounter [boss]";
+		return "encounter [#queueSize] [boss]";
 	}
 
 	@Override
 	public void execute(IUser sender, String[] args, IEventContext ctx) {
-		// EncounterHandler.procCmd(sender, args, ctx);
-		ctx.sendMessage("No implementation!");
+		EncounterHandler.procCmd(sender, args, ctx);
 	}
 
 	@Override

@@ -42,10 +42,10 @@ public class EncounterData {
 		try (BufferedReader dfIn = new BufferedReader(new FileReader(DATA_FILE));
 				BufferedReader cfgIn = new BufferedReader(new FileReader(ENC_FILE))) {
 			JsonObject cfgMap = parser.parse(cfgIn).getAsJsonObject();
-			JsonArray bossList = cfgMap.get("bosses").getAsJsonArray();
-			bossList.forEach(b -> bosses.addOutcome(new EncounterBoss(b.getAsJsonObject())));
 			JsonObject itemMap = cfgMap.get("items").getAsJsonObject();
 			itemMap.entrySet().forEach(i -> items.put(i.getKey(), new EncounterItem(i.getKey(), i.getValue().getAsJsonObject())));
+			JsonArray bossList = cfgMap.get("bosses").getAsJsonArray();
+			bossList.forEach(b -> bosses.addOutcome(new EncounterBoss(b.getAsJsonObject())));
 			
 			JsonObject dfMap = parser.parse(dfIn).getAsJsonObject();
 			JsonObject plMap = dfMap.get("players").getAsJsonObject();

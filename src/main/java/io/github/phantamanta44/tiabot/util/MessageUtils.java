@@ -59,5 +59,31 @@ public class MessageUtils {
 			return str;
 		return Character.toUpperCase(str.charAt(0)) + str.substring(1);
 	}
+
+	public static String rightPad(String str, int len, char c) {
+		if (str.length() >= len)
+			return str;
+		StringBuilder ret = new StringBuilder(str);
+		while (ret.length() < len)
+			ret.append(c);
+		return ret.toString();
+	}
+	
+	public static String rightPad(String str, int len) {
+		return rightPad(str, len, ' ');
+	}
+	
+	public static String leftPad(String str, int len, char c) {
+		if (str.length() >= len)
+			return str;
+		StringBuilder ret = new StringBuilder();
+		while (ret.length() < len - str.length())
+			ret.append(c);
+		return ret.append(str).toString();
+	}
+	
+	public static String leftPad(String str, int len) {
+		return leftPad(str, len, ' ');
+	}
 	
 }

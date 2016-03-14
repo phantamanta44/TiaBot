@@ -1,5 +1,7 @@
 package io.github.phantamanta44.tiabot.module.encounter.data;
 
+import io.github.phantamanta44.tiabot.module.encounter.data.abst.ITargetable;
+
 public class StatsDto {
 
 	public StatsDto(int atk, int def, int ap, int hp, int maxHp, double crit, double critDmg, double lifeSteal,
@@ -40,6 +42,16 @@ public class StatsDto {
 		mana = player.getMana();
 		maxMana = player.getMaxMana();
 		manaGen = player.getManaGen();
+	}
+	
+	public StatsDto(ITargetable src) {
+		atk = src.getDamageModifier();
+		def = src.getDefenseModifier();
+		ap = src.getDamageModifier();
+		hp = src.getHealth();
+		maxHp = src.getMaxHealth();
+		crit = critDmg = lifeSteal = armorPen = 0D;
+		mana = maxMana = manaGen = 0;
 	}
 	
 	private StatsDto() {

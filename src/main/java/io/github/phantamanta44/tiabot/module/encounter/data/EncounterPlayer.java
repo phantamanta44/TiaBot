@@ -1,28 +1,44 @@
 package io.github.phantamanta44.tiabot.module.encounter.data;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Random;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.function.Predicate;
+import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
+
+import org.apache.commons.lang3.mutable.MutableBoolean;
+import org.apache.commons.lang3.mutable.MutableInt;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
 import io.github.phantamanta44.tiabot.Discord;
+import io.github.phantamanta44.tiabot.TiaBot;
+import io.github.phantamanta44.tiabot.core.EventDispatcher;
+import io.github.phantamanta44.tiabot.core.ICTListener;
 import io.github.phantamanta44.tiabot.core.context.IEventContext;
+import io.github.phantamanta44.tiabot.module.encounter.BattleContext;
+import io.github.phantamanta44.tiabot.module.encounter.EncounterContext;
 import io.github.phantamanta44.tiabot.module.encounter.EncounterData;
 import io.github.phantamanta44.tiabot.module.encounter.data.EncounterDamage.Element;
 import io.github.phantamanta44.tiabot.module.encounter.data.abst.ICriticalChance;
+import io.github.phantamanta44.tiabot.module.encounter.data.abst.ITargetable;
 import io.github.phantamanta44.tiabot.module.encounter.data.abst.ITurnable;
 import io.github.phantamanta44.tiabot.module.encounter.data.abst.TurnFuture;
-import io.github.phantamanta44.tiabot.util.IFuture;
+import io.github.phantamanta44.tiabot.module.encounter.event.EncounterHandler;
 import io.github.phantamanta44.tiabot.util.ISerializable;
 import io.github.phantamanta44.tiabot.util.MathUtils;
+import io.github.phantamanta44.tiabot.util.MessageUtils;
 import io.github.phantamanta44.tiabot.util.SafeJsonWrapper;
+import sx.blah.discord.handle.impl.events.MessageReceivedEvent;
 import sx.blah.discord.handle.obj.IUser;
 
-public class EncounterPlayer implements ITurnable, ICriticalChance, ISerializable {
+public class EncounterPlayer implements ITurnable, ICriticalChance, ISerializable, ICTListener {
 
 	private static final EncounterSpell[] BASE_KIT;
 	private static final EncounterSpell AUTO_ATK;
@@ -224,6 +240,10 @@ public class EncounterPlayer implements ITurnable, ICriticalChance, ISerializabl
 		return mana;
 	}
 	
+	public void setMana(int mana) {
+		this.mana = mana;
+	}
+	
 	public int getMaxMana() {
 		return inv.stream()
 				.reduce(baseMana, (a, b) -> a + b.getMana(), (a, b) -> a + b);
@@ -264,7 +284,7 @@ public class EncounterPlayer implements ITurnable, ICriticalChance, ISerializabl
 		return userName;
 	}
 	
-	public String getID() {
+	public String getId() {
 		return userId;
 	}
 	
@@ -288,11 +308,276 @@ public class EncounterPlayer implements ITurnable, ICriticalChance, ISerializabl
 		return new StatsDto(baseAtk, baseDef, baseAp, hp, baseHp, 0D, 2D, 0D, 0D, mana, baseMana, baseManaGen);
 	}
 	
+	private static final String STAT_FORMAT = new StringBuilder()
+			.append("__**Stats:**__")
+			.append("Attack Damage: %d\n")
+			.append("Ability Power: %d\n")
+			.append("Armor: %d\n")
+			.append("Armor Penetration: %.0f%%\n")
+			.append("Life Steal: %.0f%%\n")
+			.append("Critical Strike Chance: %.0f%%\n")
+			.append("Critical Strike Damage: %.0f%%")
+			.toString();
+	
+	private MutableBoolean done = new MutableBoolean(false);
+	private Predicate<IEventContext> expected = null;
+	private EncounterContext ec;
+	private Map<String, MutableInt> cd = new HashMap<>();
+	
+	@ListenTo
+	public void onMessage(MessageReceivedEvent event, IEventContext ctx) {
+		if (ctx.getChannel().isPrivate()
+				|| !ctx.getChannel().getID().equalsIgnoreCase(EncounterHandler.getEncChannel(userId))
+				|| !ctx.getUser().getID().equalsIgnoreCase(userId))
+			return;
+		if (expected != null) {
+			if (expected.test(ctx)) {
+				synchronized (done) {
+					done.setTrue();
+					done.notify();
+				}
+			}
+			expected = null;
+			return;
+		}
+		String msg = ctx.getMessage().getContent();
+		boolean isDone = false;
+		if (msg.startsWith("attack")) {
+			ctx.sendMessage("Who do you want to attack?");
+			expected = c -> {
+				try {
+					ITargetable target = ec.enemies.stream()
+							.filter(e -> MessageUtils.lenientMatch(e.getName(), c.getMessage().getContent()))
+							.findAny().get();
+					autoAtk.applyEffect(new BattleContext(this, target, ctx), new StatsDto(this));
+					ctx.sendMessage("%s attacks %s!", getName(), target.getName());
+					return true;
+				} catch (NoSuchElementException ex) {
+					ctx.sendMessage("Target doesn't exist!");
+					return false;
+				}
+			};
+		}
+		else if (msg.startsWith("cast")) {
+			try {
+				String spellName = msg.split("\\s", 2)[1];
+				EncounterSpell spell = Arrays.stream(baseKit)
+						.filter(s -> MessageUtils.lenientMatch(s.getName(), spellName))
+						.findAny().get();
+				MutableInt cdVal;
+				if (!cd.containsKey(spell.getName()))
+					cd.put(spell.getName(), new MutableInt(0));
+				else if ((cdVal = cd.get(spell.getName())).getValue() > 0) {
+					ctx.sendMessage("%s is still on cooldown for %d turns!", spell.getName(), cdVal.getValue());
+					return;
+				}
+				if (mana < spell.getManaCost()) {
+					ctx.sendMessage("You don't have enough mana to cast %s!", spell.getName());
+					return;
+				}
+				StatsDto stats = new StatsDto(this);
+				switch (spell.getSpellType()) {
+				case ALL_TARGET:
+					ec.enemies.forEach(e -> spell.applyEffect(new BattleContext(this, e, ctx), stats));
+					mana -= spell.getManaCost();
+					cd.get(spell.getName()).setValue(spell.getCooldown());
+					ctx.sendMessage("%s cast %s!", getName(), spell.getName());
+					isDone = true;
+					break;
+				case ALL_TEAMMATE:
+					ec.allies.forEach(a -> spell.applyEffect(new BattleContext(this, a, ctx), stats));
+					mana -= spell.getManaCost();
+					cd.get(spell.getName()).setValue(spell.getCooldown());
+					ctx.sendMessage("%s cast %s!", getName(), spell.getName());
+					isDone = true;
+					break;
+				case ALL_UNIT:
+					ec.allies.forEach(a -> spell.applyEffect(new BattleContext(this, a, ctx), stats));
+					ec.enemies.forEach(e -> spell.applyEffect(new BattleContext(this, e, ctx), stats));
+					mana -= spell.getManaCost();
+					cd.get(spell.getName()).setValue(spell.getCooldown());
+					ctx.sendMessage("%s cast %s!", getName(), spell.getName());
+					isDone = true;
+					break;
+				case SELF:
+					spell.applyEffect(new BattleContext(this, this, ctx), stats);
+					mana -= spell.getManaCost();
+					cd.get(spell.getName()).setValue(spell.getCooldown());
+					ctx.sendMessage("%s cast %s!", getName(), spell.getName());
+					isDone = true;
+					break;
+				case SINGLE_TARGET:
+					ctx.sendMessage("Who do you want to cast %s on?", spell.getName());
+					expected = c -> {
+						try {
+							ITargetable target = ec.enemies.stream()
+									.filter(e -> MessageUtils.lenientMatch(e.getName(), c.getMessage().getContent()))
+									.findAny().get();
+							spell.applyEffect(new BattleContext(this, target, ctx), stats);
+							mana -= spell.getManaCost();
+							cd.get(spell.getName()).setValue(spell.getCooldown());
+							ctx.sendMessage("%s cast %s on %s!", getName(), spell.getName(), target.getName());
+							return true;
+						} catch (NoSuchElementException ex) {
+							ctx.sendMessage("Target doesn't exist!");
+							return false;
+						}
+					};
+					break;
+				case SINGLE_TEAMMATE:
+					ctx.sendMessage("Who do you want to cast %s on?", spell.getName());
+					expected = c -> {
+						try {
+							ITargetable target = ec.allies.stream()
+									.filter(e -> MessageUtils.lenientMatch(e.getName(), c.getMessage().getContent()))
+									.findAny().get();
+							spell.applyEffect(new BattleContext(this, target, ctx), stats);
+							mana -= spell.getManaCost();
+							cd.get(spell.getName()).setValue(spell.getCooldown());
+							ctx.sendMessage("%s cast %s on %s!", getName(), spell.getName(), target.getName());
+							return true;
+						} catch (NoSuchElementException ex) {
+							ctx.sendMessage("Target doesn't exist!");
+							return false;
+						}
+					};
+					break;
+				case SINGLE_UNIT:
+					ctx.sendMessage("Who do you want to cast %s on?", spell.getName());
+					expected = c -> {
+						try {
+							ITargetable target = Stream.concat(ec.allies.stream(), ec.enemies.stream())
+									.filter(e -> MessageUtils.lenientMatch(e.getName(), c.getMessage().getContent()))
+									.findAny().get();
+							spell.applyEffect(new BattleContext(this, target, ctx), stats);
+							mana -= spell.getManaCost();
+							cd.get(spell.getName()).setValue(spell.getCooldown());
+							ctx.sendMessage("%s cast %s on %s!", getName(), spell.getName(), target.getName());
+							return true;
+						} catch (NoSuchElementException ex) {
+							ctx.sendMessage("Target doesn't exist!");
+							return false;
+						}
+					};
+					break;
+				}
+			} catch (NoSuchElementException ex) {
+				ctx.sendMessage("You don't know a spell by this name!");
+			} catch (IndexOutOfBoundsException ex) {
+				ctx.sendMessage("You must specify a spell to use!");
+			}
+		}
+		else if (msg.startsWith("item")) {
+			try {
+				String itemName = msg.split("\\s", 2)[1];
+				EncounterItem item = inv.stream()
+						.filter(i -> MessageUtils.lenientMatch(i.getName(), itemName))
+						.findAny().get();
+				if (!item.hasActive()) {
+					ctx.sendMessage("%s doesn't have an active!", item.getName());
+					return;
+				}
+				MutableInt cdVal;
+				if (!cd.containsKey(item.getName()))
+					cd.put(item.getName(), new MutableInt(0));
+				else if ((cdVal = cd.get(item.getName())).getValue() > 0) {
+					ctx.sendMessage("%s is still on cooldown for %d turns!", item.getName(), cdVal.getValue());
+					return;
+				}
+				ctx.sendMessage("Who do you want to use %s on?", item.getName());
+				expected = c -> {
+					try {
+						ITargetable target = ec.enemies.stream()
+								.filter(e -> MessageUtils.lenientMatch(e.getName(), c.getMessage().getContent()))
+								.findAny().get();
+						item.procActive(new BattleContext(this, target, ctx), new StatsDto(this));
+						cd.get(item.getName()).setValue(4);
+						ctx.sendMessage("%s used %s on %s!", getName(), item.getName(), target.getName());
+						return true;
+					} catch (NoSuchElementException ex) {
+						ctx.sendMessage("Target doesn't exist!");
+						return false;
+					}
+				};
+			} catch (NoSuchElementException ex) {
+				ctx.sendMessage("You don't have an item by this name!");
+			} catch (IndexOutOfBoundsException ex) {
+				ctx.sendMessage("You must specify an item to use!");
+			}
+		}
+		else if (msg.startsWith("spells")) {
+			ctx.sendMessage("__**Spellbook:**__\n%s", Arrays.stream(baseKit)
+					.map(s -> String.format("**%s** *(%s Mana) (%s Cooldown)*\n%s", s.getName(), s.getManaCost(), s.getCooldown(), s.getDesc()))
+					.reduce((a, b) -> a.concat("\n\n").concat(b)).get());
+		}
+		else if (msg.startsWith("inv")) {
+			ctx.sendMessage("__**Inventory:**__\n%s\nUse `%sencitem <item>` to learn more about an item.", inv.stream()
+					.map(i -> i.getName())
+					.reduce((a, b) -> a.concat(", ").concat(b)).orElse("(You have no items.)"), TiaBot.getPrefix());
+		}
+		else if (msg.startsWith("stats"))
+			ctx.sendMessage(STAT_FORMAT, getDamageModifier(), getAbilityPower(), getDefenseModifier(), getArmorPen(), getLifeSteal(), getCritChance(), getCritModifier());
+		else if (msg.startsWith("skip")) {
+			ctx.sendMessage("%s skipped their turn.", getName());
+			isDone = true;
+		}
+		if (isDone) {
+			synchronized (done) {
+				done.setTrue();
+				done.notify();
+			}
+		}
+	}
+	
 	@Override
-	public IFuture<?> onTurn(IEventContext ctx, Random rand) {
+	public TurnFuture onTurn(IEventContext ctx, Random rand, EncounterContext ec) {
+		this.ec = ec;
+		done.setFalse();
+		EventDispatcher.registerHandler(this);
 		return new TurnFuture(() -> {
-			
+			mana += getManaGen();
+			applyEffects();
+			inv.forEach(i -> {
+				if (i.hasPassive())
+					i.procPassive(new BattleContext(this, this, ctx), new StatsDto(this));
+			});
+			cd.forEach((k, v) -> v.setValue(Math.max(v.getValue() - 1, 0)));
+			ctx.sendMessage("%s\n%s", getStatusMsg(),
+					"\nValid actions: `attack`, `cast <spell>`, `item <item>`, `spells`, `inv`, `stats`, `skip`");
+			synchronized (done) {
+				while (!done.booleanValue()) {
+					try {
+						done.wait();
+					} catch (InterruptedException ex) { }
+				}
+			}
+			cancelTurn();
 		});
+	}
+	
+	private String getStatusMsg() {
+		String effList = status.stream()
+				.map(e -> String.format("[%s %d]", e.getType(), e.getDuration()))
+				.reduce((a, b) -> a + ' ' + b).orElse("");
+		if (!effList.isEmpty())
+			effList = ' ' + effList;
+		String cdList = cd.entrySet().stream()
+				.filter(c -> c.getValue().getValue() > 0)
+				.map(c -> String.format("[%s %d]", c.getKey(), c.getValue().getValue()))
+				.reduce((a, b) -> a + ' ' + b).orElse("");
+		if (!cdList.isEmpty())
+			cdList = ' ' + cdList;
+		return String.format("**%s** [HP: %d/%d] [Mana: %d/%d (+%d)]%s%s",
+				getName(), getHealth(), getMaxHealth(), mana, getMaxMana(), getManaGen(), effList, cdList);
+	}
+
+	@Override
+	public void cancelTurn() {
+		EventDispatcher.unregisterHandler(this);
+	}
+	
+	public void resetCooldowns() {
+		cd.forEach((k, v) -> v.setValue(0));
 	}
 
 }

@@ -42,7 +42,7 @@ public class CommandHelp implements ICommand {
 					.filter(m -> ModuleManager.isEnabled(m.getKey()))
 					.map(m -> String.format("**%s** \u2013 %s", MessageUtils.capitalize(m.getValue().getName()), m.getValue().getDesc()))
 					.reduce((a, b) -> a.concat("\n").concat(b)).get();
-			ctx.sendMessage("**Available Modules:**\n%s", mods);
+			ctx.sendMessage("__**Available Modules:**__\n%s", mods);
 		} else if (args.length == 1) {
 			CTModule mod = ModuleManager.getModule(args[0].toLowerCase());
 			if (mod == null) {
@@ -54,7 +54,7 @@ public class CommandHelp implements ICommand {
 					.map(m -> String.format("%s%s - %s", pref, m.getUsage(), m.getDesc()))
 					.sorted()
 					.reduce((a, b) -> a.concat("\n").concat(b)).orElse("*This module exposes no commands.*");
-			ctx.sendMessage("**Module: %s**\nAuthor: %s\n%s\n\nCommand Summary:\n```%s```", MessageUtils.capitalize(mod.getName()), mod.getAuthor(), mod.getDesc(), cmds);
+			ctx.sendMessage("__**Module: %s**__\nAuthor: %s\n%s\n\nCommand Summary:\n```%s```", MessageUtils.capitalize(mod.getName()), mod.getAuthor(), mod.getDesc(), cmds);
 		} else if (args.length == 2) {
 			CTModule mod = ModuleManager.getModule(args[0].toLowerCase());
 			if (mod == null) {
@@ -72,7 +72,7 @@ public class CommandHelp implements ICommand {
 			String aliases = cmd.getAliases().stream()
 					.map(a -> String.format("`%s%s`", pref, a))
 					.reduce((a, b) -> a.concat(", ").concat(b)).orElse("None");
-			ctx.sendMessage("**Command: %s**\nUsage: `%s%s`\nAliases: %s\n%s", cmd.getName(), pref, cmd.getUsage(), aliases, cmd.getDesc());
+			ctx.sendMessage("__**Command: %s**__\nUsage: `%s%s`\nAliases: %s\n%s", cmd.getName(), pref, cmd.getUsage(), aliases, cmd.getDesc());
 		}
 		else
 			ctx.sendMessage("Invalid syntax!");

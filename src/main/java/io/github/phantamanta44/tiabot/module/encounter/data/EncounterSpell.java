@@ -52,6 +52,10 @@ public class EncounterSpell implements ISerializable {
 		return mana;
 	}
 	
+	public int getCooldown() {
+		return cooldown;
+	}
+	
 	public SpellType getSpellType() {
 		return type;
 	}

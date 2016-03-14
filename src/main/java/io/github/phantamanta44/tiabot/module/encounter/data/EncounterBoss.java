@@ -8,11 +8,16 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
 import io.github.phantamanta44.tiabot.core.context.IEventContext;
+import io.github.phantamanta44.tiabot.module.encounter.BattleContext;
+import io.github.phantamanta44.tiabot.module.encounter.EncounterContext;
 import io.github.phantamanta44.tiabot.module.encounter.EncounterData;
 import io.github.phantamanta44.tiabot.module.encounter.data.EncounterDamage.Element;
+import io.github.phantamanta44.tiabot.module.encounter.data.EncounterSpell.SpellType;
+import io.github.phantamanta44.tiabot.module.encounter.data.abst.ITargetable;
 import io.github.phantamanta44.tiabot.module.encounter.data.abst.ITurnable;
+import io.github.phantamanta44.tiabot.module.encounter.data.abst.TurnFuture;
 import io.github.phantamanta44.tiabot.util.ChanceList;
-import io.github.phantamanta44.tiabot.util.IFuture;
+import io.github.phantamanta44.tiabot.util.CollectionUtils;
 import io.github.phantamanta44.tiabot.util.ISerializable;
 import io.github.phantamanta44.tiabot.util.MathUtils;
 import io.github.phantamanta44.tiabot.util.SafeJsonWrapper;
@@ -26,6 +31,7 @@ public class EncounterBoss implements ITurnable, ISerializable, Cloneable {
 	private ChanceList<EncounterItem> drops;
 	private ChanceList<EncounterSpell> spells;
 	private ChanceList<String> idleTexts;
+	private String deathMsg;
 	private List<EncounterEffect> status;
 	private Element element;
 	
@@ -43,6 +49,7 @@ public class EncounterBoss implements ITurnable, ISerializable, Cloneable {
 		data.getJsonArray("drops").forEach(i -> drops.addOutcome(EncounterData.getItem(i.getAsString())));
 		data.getJsonArray("spells").forEach(a -> spells.addOutcome(new EncounterSpell(a.getAsJsonObject())));
 		data.getJsonArray("idle").forEach(i -> idleTexts.addOutcome(i.getAsString()));
+		deathMsg = data.getString("death");
 		element = Element.valueOf(data.getString("element"));
 	}
 	
@@ -53,6 +60,7 @@ public class EncounterBoss implements ITurnable, ISerializable, Cloneable {
 		this.drops = orig.drops;
 		this.spells = orig.spells;
 		this.idleTexts = orig.idleTexts;
+		this.deathMsg = orig.deathMsg;
 		this.status = orig.status;
 		this.atk = orig.atk;
 		this.def = orig.def;
@@ -78,6 +86,7 @@ public class EncounterBoss implements ITurnable, ISerializable, Cloneable {
 		JsonArray idleList = new JsonArray();
 		idleTexts.stream().forEach(t -> idleList.add(t));
 		ser.add("idle", idleList);
+		ser.addProperty("death", deathMsg);
 		return ser;
 	}
 	
@@ -149,9 +158,43 @@ public class EncounterBoss implements ITurnable, ISerializable, Cloneable {
 		return idleTexts.getAtRandom(rand);
 	}
 
+	public String getDeathMessage() {
+		return deathMsg;
+	}
+	
+	public int getExperience() {
+		return xpWorth;
+	}
+	
 	@Override
-	public IFuture<?> onTurn(IEventContext ctx, Random rand) {
-		return null;
+	public TurnFuture onTurn(IEventContext ctx, Random rand, EncounterContext ec) {
+		return new TurnFuture(() -> {
+			EncounterSpell spell = getSpell(rand);
+			if (spell.getSpellType() == SpellType.SINGLE_TARGET) {
+				ITargetable target = CollectionUtils.any(ec.enemies, rand);
+				ctx.sendMessage("%s used %s on %s!", getName(), spell.getName(), target.getName());
+				spell.applyEffect(new BattleContext(this, target, ctx), new StatsDto(this));
+			}
+			else if (spell.getSpellType() == SpellType.ALL_TARGET) {
+				ctx.sendMessage("%s used %s!", getName(), spell.getName());
+				ec.enemies.forEach(t -> spell.applyEffect(new BattleContext(this, t, ctx), new StatsDto(this)));
+			}
+			else if (spell.getSpellType() == SpellType.SELF) {
+				ctx.sendMessage("%s used %s!", getName(), spell.getName());
+				spell.applyEffect(new BattleContext(this, this, ctx), new StatsDto(this));
+			}
+			else
+				ctx.sendMessage("%s did nothing.", getName());
+			try {
+				Thread.sleep(1400);
+			} catch (Exception e) { }
+			ctx.sendMessage(getIdleText(rand));
+		});
+	}
+	
+	@Override
+	public void cancelTurn() {
+		throw new UnsupportedOperationException();
 	}
 	
 }

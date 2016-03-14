@@ -42,14 +42,14 @@ public class CommandEncItem implements ICommand {
 		EncounterItem item = EncounterData.getItem(itemName);
 		if (item == null) {
 			item = EncounterData.getItems().stream()
-					.filter(i -> i.getName().trim().equalsIgnoreCase(itemName))
+					.filter(i -> MessageUtils.lenientMatch(i.getName(), itemName))
 					.findAny().orElse(null);
 		}
 		if (item == null) {
 			ctx.sendMessage("Nonexistent item!");
 			return;
 		}
-		ctx.sendMessage(String.format("**%s**\n%s", item.getName(), item.getDesc()));
+		ctx.sendMessage(String.format("__**%s**__\n%s", item.getName(), item.getDesc()));
 	}
 
 	@Override
