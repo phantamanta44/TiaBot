@@ -13,6 +13,7 @@ import java.util.concurrent.TimeUnit;
 
 import io.github.phantamanta44.tiabot.core.ICTListener;
 import io.github.phantamanta44.tiabot.core.context.IEventContext;
+import io.github.phantamanta44.tiabot.module.encounter.EncounterBank;
 import io.github.phantamanta44.tiabot.module.encounter.EncounterContext;
 import io.github.phantamanta44.tiabot.module.encounter.EncounterData;
 import io.github.phantamanta44.tiabot.module.encounter.data.EncounterBoss;
@@ -67,7 +68,7 @@ public class EncounterHandler implements ICTListener {
 			}
 			if (args.length > 1) {
 				try {
-					boss = EncounterData.getBoss(MessageUtils.concat(Arrays.copyOfRange(args, 1, args.length - 1)));
+					boss = EncounterData.getBoss(MessageUtils.concat(Arrays.copyOfRange(args, 1, args.length)));
 				} catch (Exception ex) {
 					ctx.sendMessage("No such boss!");
 					return;
@@ -92,11 +93,19 @@ public class EncounterHandler implements ICTListener {
 		return pl;
 	}
 	
+	public static boolean isEngaged(EncounterPlayer pl) {
+		return engaged.containsKey(pl.getId());
+	}
+	
 	public static String getEncChannel(String userId) {
 		Encounter enc = engaged.get(userId);
 		if (enc == null)
 			return null;
 		return enc.getChannel().getID();
+	}
+	
+	public static Encounter getEncounter(IChannel chan) {
+		return inProg.get(chan.getID());
 	}
 	
 	public static class Encounter {
@@ -260,20 +269,20 @@ public class EncounterHandler implements ICTListener {
 				int xp = (int)((float)boss.getExperience() / (float)parts.length);
 				if (dead.contains(p))
 					xp = (int)((float)xp / 1.5F);
-				EncounterItem drop = boss.getDrop(rand); 
-				p.addExp(xp);
-				p.getInv().add(drop);
-				EncounterData.save();
+				EncounterItem drop = boss.getDrop(rand);
 				loot.append(String.format("%s received: [%s] [%d XP]\n", p.getName(), drop.getName(), xp));
+				p.addExp(xp);
+				EncounterBank.addItem(p, drop);
+				EncounterData.save();
 			});
-			ctx.sendMessage(loot.toString());
+			ctx.sendMessage(loot.append("Excess loot has been deposited in the bank. Use `[]encbank` to access it.").toString());
 			} catch (Exception ex) {
 				ctx.sendMessage("Fatal error distributing loot! Check console for details.");
 				ex.printStackTrace();
 			}
 		}
 		
-		private void cancel() {
+		public void cancel() {
 			try {
 				if (task != null)
 					task.cancel(true);
@@ -293,6 +302,10 @@ public class EncounterHandler implements ICTListener {
 		
 		public IChannel getChannel() {
 			return ctx.getChannel();
+		}
+		
+		public EncounterBoss getBoss() {
+			return boss;
 		}
 		
 	}

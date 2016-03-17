@@ -17,7 +17,6 @@ import org.mozilla.javascript.ScriptableObject;
 import org.mozilla.javascript.Undefined;
 
 import io.github.phantamanta44.tiabot.Discord;
-import io.github.phantamanta44.tiabot.TiaBot;
 import io.github.phantamanta44.tiabot.core.command.ICommand;
 import io.github.phantamanta44.tiabot.core.context.IEventContext;
 import io.github.phantamanta44.tiabot.module.scripting.host.HostObjectChannel;
@@ -31,8 +30,8 @@ import sx.blah.discord.handle.obj.IUser;
 
 public class CommandEval implements ICommand {
 	
-	private static final Pattern lambdaRegex = Pattern.compile("([A-Za-z]+)\\|\\s*\\(?(\\w+(?:,\\s*\\w+)*)\\)?\\s*->\\s*\\{?(.*?)\\}?\\|");
-	private static final Map<String, String> lambdaAbbrev = new HashMap<>();
+	protected static final Pattern lambdaRegex = Pattern.compile("([A-Za-z]+)\\|\\s*\\(?(\\w+(?:,\\s*\\w+)*)\\)?\\s*->\\s*\\{?(.*?)\\}?\\|");
+	protected static final Map<String, String> lambdaAbbrev = new HashMap<>();
 	
 	static {
 		lambdaAbbrev.put("c", "Consumer");
@@ -91,7 +90,7 @@ public class CommandEval implements ICommand {
 			Object rtObj = con.evaluateString(scope, script, "<eval>", 1, null);
 			Object apiHost = scope.get("api", scope);
 			if (apiHost != Scriptable.NOT_FOUND && apiHost instanceof HostObjectDiscordAPI)
-				((HostObjectDiscordAPI)apiHost).flushBuffer(ec);
+				((HostObjectDiscordAPI)apiHost).flushBufferSafe(ec);
 			String rtVal = Context.toString(rtObj);
 			if (!(rtObj instanceof Undefined) && !rtVal.isEmpty())
 				ec.sendMessage(rtVal);
@@ -107,7 +106,7 @@ public class CommandEval implements ICommand {
 		}
 	}
 
-	private static void defineObjects(Scriptable scope, IEventContext ec) throws Exception {
+	protected static void defineObjects(Scriptable scope, IEventContext ec) throws Exception {
 		ScriptableObject.defineClass(scope, HostObjectChannel.class);
 		ScriptableObject.defineClass(scope, HostObjectDiscordAPI.class);
 		ScriptableObject.defineClass(scope, HostObjectGuild.class);
@@ -122,7 +121,7 @@ public class CommandEval implements ICommand {
 		ScriptableObject.putProperty(scope, "api", Context.getCurrentContext().newObject(scope, "DiscordAPI"));
 	}
 	
-	private static String parseLambda(String exp) {
+	protected static String parseLambda(String exp) {
 		try {
 			Matcher mat = lambdaRegex.matcher(exp);
 			if (!mat.matches())
@@ -142,7 +141,7 @@ public class CommandEval implements ICommand {
 		}
 	}
 
-	private static String expandLambda(String cName) {
+	protected static String expandLambda(String cName) {
 		if (!lambdaAbbrev.containsKey(cName))
 			return cName;
 		return lambdaAbbrev.get(cName);
@@ -150,12 +149,12 @@ public class CommandEval implements ICommand {
 
 	@Override
 	public boolean canUseCommand(IUser sender, IEventContext ctx) {
-		return TiaBot.isAdmin(sender);
+		return true;
 	}
 
 	@Override
 	public String getPermissionMessage(IUser sender, IEventContext ctx) {
-		return "No permission!";
+		throw new IllegalArgumentException();
 	}
 
 	@Override

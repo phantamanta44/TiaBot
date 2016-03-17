@@ -3,18 +3,18 @@ package io.github.phantamanta44.tiabot.module.encounter.command;
 import java.util.Collections;
 import java.util.List;
 
+import io.github.phantamanta44.tiabot.TiaBot;
 import io.github.phantamanta44.tiabot.core.command.ICommand;
 import io.github.phantamanta44.tiabot.core.context.IEventContext;
-import io.github.phantamanta44.tiabot.module.encounter.EncounterData;
-import io.github.phantamanta44.tiabot.module.encounter.data.EncounterItem;
-import io.github.phantamanta44.tiabot.util.MessageUtils;
+import io.github.phantamanta44.tiabot.module.encounter.event.EncounterHandler;
+import io.github.phantamanta44.tiabot.module.encounter.event.EncounterHandler.Encounter;
 import sx.blah.discord.handle.obj.IUser;
 
-public class CommandEncItem implements ICommand {
-	
+public class CommandEncCancel implements ICommand {
+
 	@Override
 	public String getName() {
-		return "encitem";
+		return "enccancel";
 	}
 
 	@Override
@@ -24,38 +24,35 @@ public class CommandEncItem implements ICommand {
 
 	@Override
 	public String getDesc() {
-		return "Look up an item.";
+		return "Cancel an ongoing battle.";
 	}
 
 	@Override
 	public String getUsage() {
-		return "encitem <item>";
+		return "enccancel";
 	}
 
 	@Override
 	public void execute(IUser sender, String[] args, IEventContext ctx) {
-		if (args.length < 1) {
-			ctx.sendMessage("You need to specify an item!");
+		Encounter enc = EncounterHandler.getEncounter(ctx.getChannel());
+		if (enc == null) {
+			ctx.sendMessage("There is no encounter in progress!");
 			return;
 		}
-		EncounterItem item = EncounterData.matchItem(MessageUtils.concat(args));
-		if (item == null) {
-			ctx.sendMessage("Nonexistent item!");
-			return;
-		}
-		ctx.sendMessage(String.format("__**%s**__\n%s", item.getName(), item.getDesc()));
+		enc.cancel();
+		ctx.sendMessage("Encounter cancelled.");
 	}
 
 	@Override
 	public boolean canUseCommand(IUser sender, IEventContext ctx) {
-		return true;
+		return TiaBot.isAdmin(sender);
 	}
 
 	@Override
 	public String getPermissionMessage(IUser sender, IEventContext ctx) {
-		throw new UnsupportedOperationException();
+		return "No permission!";
 	}
-	
+
 	@Override
 	public String getEnglishInvocation() {
 		return null;

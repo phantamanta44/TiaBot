@@ -27,4 +27,11 @@ public class ChanceList<T> {
 		return this.chanceSet.stream();
 	}
 	
+	@Override
+	public String toString() {
+		return String.format("ChanceSet {%s}", chanceSet.stream()
+				.map(e -> e.toString())
+				.reduce((a, b) -> a.concat(", ").concat(b)).orElse(""));
+	}
+	
 }

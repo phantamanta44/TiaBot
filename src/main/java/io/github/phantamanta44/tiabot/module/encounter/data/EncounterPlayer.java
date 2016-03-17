@@ -268,16 +268,20 @@ public class EncounterPlayer implements ITurnable, ICriticalChance, ISerializabl
 	
 	public void addExp(int amt) {
 		while (amt > 0) {
-			if (amt > getExpNeeded()) {
-				amt -= getExpNeeded();
-				level++;
-				xp = 0;
+			if (amt > getExpNeeded() - xp) {
+				amt -= getExpNeeded() - xp;
+				levelUp();
 			}
 			else {
 				xp += amt;
 				amt = 0;
 			}
 		}
+	}
+	
+	public void levelUp() {
+		xp = 0;
+		level++;
 	}
 
 	public String getName() {
@@ -309,7 +313,7 @@ public class EncounterPlayer implements ITurnable, ICriticalChance, ISerializabl
 	}
 	
 	private static final String STAT_FORMAT = new StringBuilder()
-			.append("__**Stats:**__")
+			.append("__**Stats:**__\n")
 			.append("Attack Damage: %d\n")
 			.append("Ability Power: %d\n")
 			.append("Armor: %d\n")
@@ -516,7 +520,7 @@ public class EncounterPlayer implements ITurnable, ICriticalChance, ISerializabl
 					.reduce((a, b) -> a.concat(", ").concat(b)).orElse("(You have no items.)"), TiaBot.getPrefix());
 		}
 		else if (msg.startsWith("stats"))
-			ctx.sendMessage(STAT_FORMAT, getDamageModifier(), getAbilityPower(), getDefenseModifier(), getArmorPen(), getLifeSteal(), getCritChance(), getCritModifier());
+			ctx.sendMessage(STAT_FORMAT, getDamageModifier(), getAbilityPower(), getDefenseModifier(), getArmorPen() * 100D, getLifeSteal() * 100D, getCritChance() * 100D, getCritModifier() * 100D);
 		else if (msg.startsWith("skip")) {
 			ctx.sendMessage("%s skipped their turn.", getName());
 			isDone = true;
@@ -535,7 +539,7 @@ public class EncounterPlayer implements ITurnable, ICriticalChance, ISerializabl
 		done.setFalse();
 		EventDispatcher.registerHandler(this);
 		return new TurnFuture(() -> {
-			mana += getManaGen();
+			mana = Math.min(mana + getManaGen(), getMaxMana());
 			applyEffects();
 			inv.forEach(i -> {
 				if (i.hasPassive())

@@ -73,9 +73,18 @@ public class HostObjectDiscordAPI extends ScriptableObject {
 	}
 	
 	public void flushBuffer(IMessageable chan) {
+		flushBuffer(chan, 128L);
+	}
+
+	public void flushBufferSafe(IMessageable chan) {
+		flushBuffer(chan, 8L);
+	}
+	
+	private void flushBuffer(IMessageable chan, long size) {
 		if (msgBuffer.isEmpty())
 			return;
 		String toSend = msgBuffer.stream()
+				.limit(size)
 				.reduce((a, b) -> a.concat("\n").concat(b)).orElse("");
 		if (toSend.isEmpty())
 			return;

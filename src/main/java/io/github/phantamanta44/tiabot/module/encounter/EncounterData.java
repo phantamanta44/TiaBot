@@ -23,6 +23,7 @@ import io.github.phantamanta44.tiabot.module.encounter.data.EncounterBoss;
 import io.github.phantamanta44.tiabot.module.encounter.data.EncounterItem;
 import io.github.phantamanta44.tiabot.module.encounter.data.EncounterPlayer;
 import io.github.phantamanta44.tiabot.util.ChanceList;
+import io.github.phantamanta44.tiabot.util.MessageUtils;
 import sx.blah.discord.handle.obj.IUser;
 
 public class EncounterData {
@@ -50,6 +51,7 @@ public class EncounterData {
 			JsonObject dfMap = parser.parse(dfIn).getAsJsonObject();
 			JsonObject plMap = dfMap.get("players").getAsJsonObject();
 			plMap.entrySet().forEach(e -> players.put(e.getKey(), new EncounterPlayer(e.getValue().getAsJsonObject())));
+			EncounterBank.deserialize(dfMap.get("bank").getAsJsonObject());
 		} catch (Exception ex) {
 			TiaBot.logger.severe("Errored while loading encounter data!");
 			ex.printStackTrace();
@@ -67,6 +69,7 @@ public class EncounterData {
 			JsonObject plMap = new JsonObject();
 			players.forEach((k, v) -> plMap.add(k, v.serialize()));
 			dfMap.add("players", plMap);
+			dfMap.add("bank", EncounterBank.serialize());
 			strOut.println(gson.toJson(dfMap));
 		} catch (Exception ex) {
 			TiaBot.logger.severe("Errored while saving encounter data!");
@@ -101,6 +104,16 @@ public class EncounterData {
 
 	public static Collection<EncounterItem> getItems() {
 		return items.values();
+	}
+
+	public static EncounterItem matchItem(String name) {
+		EncounterItem item = items.get(name);
+		if (item == null) {
+			item = EncounterData.getItems().stream()
+					.filter(i -> MessageUtils.lenientMatch(i.getName(), name))
+					.findAny().orElse(null);
+		}
+		return item;
 	}
 	
 }

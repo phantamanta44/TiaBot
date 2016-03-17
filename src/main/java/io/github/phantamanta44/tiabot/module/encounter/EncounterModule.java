@@ -1,5 +1,8 @@
 package io.github.phantamanta44.tiabot.module.encounter;
 import io.github.phantamanta44.tiabot.module.CTModule;
+import io.github.phantamanta44.tiabot.module.encounter.command.CommandEncBank;
+import io.github.phantamanta44.tiabot.module.encounter.command.CommandEncCancel;
+import io.github.phantamanta44.tiabot.module.encounter.command.CommandEncDebug;
 import io.github.phantamanta44.tiabot.module.encounter.command.CommandEncInfo;
 import io.github.phantamanta44.tiabot.module.encounter.command.CommandEncItem;
 import io.github.phantamanta44.tiabot.module.encounter.command.CommandEncReload;
@@ -13,8 +16,11 @@ public class EncounterModule extends CTModule {
 		commands.add(new CommandEncounter());
 		commands.add(new CommandEncInfo());
 		commands.add(new CommandEncItem());
+		commands.add(new CommandEncBank());
+		commands.add(new CommandEncCancel());
 		commands.add(new CommandEncReload());
 		commands.add(new CommandEncSave());
+		commands.add(new CommandEncDebug());
 		listeners.add(new EncounterHandler());
 	}
 	
