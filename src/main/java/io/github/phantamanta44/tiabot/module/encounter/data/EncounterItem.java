@@ -29,13 +29,13 @@ public class EncounterItem implements IModifierSusceptible, ICriticalChance, ISe
 		atk = stats.getInt("atk");
 		def = stats.getInt("def");
 		ap = stats.getInt("ap");
-		health = stats.getInt("hp");
+		health = stats.getInt("health");
 		crit = stats.getDouble("critCnc");
 		critDmg = stats.getDouble("critDmg");
 		lifeSteal = stats.getDouble("lifeSteal");
 		armorPen = stats.getDouble("armorPen");
 		mana = stats.getInt("manaPool");
-		manaGen = stats.getInt("manaReg");
+		manaGen = stats.getInt("manaGen");
 		if (props.containsKey("active"))
 			active = props.getString("active");
 		if (props.containsKey("passive"))
@@ -51,13 +51,13 @@ public class EncounterItem implements IModifierSusceptible, ICriticalChance, ISe
 		stats.addProperty("atk", atk);
 		stats.addProperty("def", def);
 		stats.addProperty("ap", ap);
-		stats.addProperty("hp", health);
+		stats.addProperty("health", health);
 		stats.addProperty("critCnc", crit);
 		stats.addProperty("critDmg", critDmg);
 		stats.addProperty("lifeSteal", lifeSteal);
 		stats.addProperty("armorPen", armorPen);
 		stats.addProperty("manaPool", mana);
-		stats.addProperty("manaReg", manaGen);
+		stats.addProperty("manaGen", manaGen);
 		ser.add("stats", stats);
 		JsonObject props = new JsonObject();
 		if (active != null)

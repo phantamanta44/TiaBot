@@ -61,19 +61,19 @@ public class EncounterPlayer implements ITurnable, ICriticalChance, ISerializabl
 		w.addProperty("name", "Frigid Bulwark");
 		w.addProperty("desc", "Raises a protective sheet of ice that grants **20 Armor** and lasts for 3 turns.");
 		w.addProperty("cost", 30);
-		q.addProperty("cooldown", 5);
+		w.addProperty("cooldown", 5);
 		w.addProperty("type", "SINGLE_TEAMMATE");
 		w.addProperty("script", "bctx.getTarget().addStatusEffect(new EncounterEffect(EncounterEffect.EffectType.SHIELD, 3))");
 		e.addProperty("name", "Oceanic Barrage");
 		e.addProperty("desc", "Launches a volley of pressurized fluid that deals **60 + 30% AP + 15% AD** water damage to each opponent.");
 		e.addProperty("cost", 35);
-		q.addProperty("cooldown", 3);
+		e.addProperty("cooldown", 3);
 		e.addProperty("type", "ALL_TARGET");
 		e.addProperty("script", "EncounterDamage.noCrit(bctx.getTarget(), 60 + 0.3 * stats.ap + 0.15 * stats.atk, EncounterDamage.Element.WATER, stats, bctx.getSource());");
 		r.addProperty("name", "The Tempest");
 		r.addProperty("desc", "Batters the opponents with a freezing storm that deals **240 + 275% AP** ice damage and freezes for 1 turn.");
 		r.addProperty("cost", 100);
-		q.addProperty("cooldown", 15);
+		r.addProperty("cooldown", 15);
 		r.addProperty("type", "ALL_TARGET");
 		r.addProperty("script", "EncounterDamage.noCrit(bctx.getTarget(), 240 + 2.75 * stats.ap, EncounterDamage.Element.ICE, stats, bctx.getSource()); bctx.getTarget().addStatusEffect(new EncounterEffect(EncounterEffect.EffectType.FREEZE, 3));");
 		BASE_KIT = new EncounterSpell[] {new EncounterSpell(q), new EncounterSpell(w), new EncounterSpell(e), new EncounterSpell(r)};
@@ -95,7 +95,7 @@ public class EncounterPlayer implements ITurnable, ICriticalChance, ISerializabl
 		level = 1;
 		xp = 0;
 		hp = baseHp = 640;
-		mana = baseMana = 400;
+		mana = baseMana = 127;
 		baseManaGen = 3;
 		baseAtk = 59;
 		baseAp = 19;
@@ -277,11 +277,18 @@ public class EncounterPlayer implements ITurnable, ICriticalChance, ISerializabl
 				amt = 0;
 			}
 		}
+		EncounterData.save();
 	}
 	
 	public void levelUp() {
 		xp = 0;
 		level++;
+		baseHp = (int)(640D + Math.sqrt(level * 270) * 21D);
+		baseAtk = (int)(59D + Math.sqrt(level * 3) * 9D);
+		baseDef = (int)(29D + Math.sqrt(level * 3) * 4.1D);
+		baseAp = (int)(19D + Math.sqrt(level * 50) * 1.4D);
+		baseMana = (int)(127D + Math.sqrt(level * 6) * 20D);
+		baseManaGen = 3 + (int)Math.floor(Math.sqrt(level) / 1.8D);
 	}
 
 	public String getName() {
