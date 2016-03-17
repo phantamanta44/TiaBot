@@ -34,12 +34,12 @@ public class ModuleManager {
 			throw new IllegalArgumentException("No such module");
 		CTModule mod = modMap.get(modId);
 		if (state && !status.get(modId).getValue()) {
-			status.get(modId).setValue(true);
 			mod.onEnable();
+			status.get(modId).setValue(true);
 		}
 		else if (!state && status.get(modId).getValue()) {
-			status.get(modId).setValue(false);
 			mod.onDisable();
+			status.get(modId).setValue(false);
 		}
 	}
 
