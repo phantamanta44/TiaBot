@@ -139,5 +139,10 @@ public class EncounterItem implements IModifierSusceptible, ICriticalChance, ISe
 	public String getId() {
 		return id;
 	}
+	
+	@Override
+	public String toString() {
+		return "encitem$" + id;
+	}
 
 }

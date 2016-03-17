@@ -60,6 +60,11 @@ public class EncounterSpell implements ISerializable {
 		return type;
 	}
 	
+	@Override
+	public String toString() {
+		return "encspell$" + name;
+	}
+	
 	public static enum SpellType {
 		
 		SINGLE_TARGET, ALL_TARGET,		// Target opponents

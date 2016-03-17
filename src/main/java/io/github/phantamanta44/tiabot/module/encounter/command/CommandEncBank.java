@@ -69,6 +69,7 @@ public class CommandEncBank implements ICommand {
 				}	
 				pl.getInv().remove(toD);
 				acc.addItem(toD);
+				EncounterData.save();
 				ctx.sendMessage("Deposited: %s x 1", toD.getName());
 				break;
 			case "withdraw":
@@ -90,6 +91,7 @@ public class CommandEncBank implements ICommand {
 					return;
 				}
 				pl.getInv().add(toW);
+				EncounterData.save();
 				ctx.sendMessage("Withdrawn: %s x 1", toW.getName());
 				break;
 			default:
