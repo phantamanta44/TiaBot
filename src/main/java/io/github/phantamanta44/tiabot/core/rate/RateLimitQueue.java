@@ -2,21 +2,30 @@ package io.github.phantamanta44.tiabot.core.rate;
 
 import java.util.Deque;
 import java.util.concurrent.ConcurrentLinkedDeque;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
 import io.github.phantamanta44.tiabot.util.IFuture;
+import io.github.phantamanta44.tiabot.util.ThreadPoolFactory;
+import io.github.phantamanta44.tiabot.util.ThreadPoolFactory.PoolType;
+import io.github.phantamanta44.tiabot.util.ThreadPoolFactory.QueueType;
 
 public class RateLimitQueue {
 
-	private static ScheduledExecutorService taskPool = Executors.newSingleThreadScheduledExecutor();
+	private static ScheduledExecutorService taskPool;
 	
 	private Deque<QueuedAction<?>> queue = new ConcurrentLinkedDeque<>();
 	private long ttl = 0L;
 	private ScheduledFuture<?> updateFuture;
+	
+	static {
+		taskPool = new ThreadPoolFactory()
+				.withPool(PoolType.SCHEDULED)
+				.withQueue(QueueType.CACHED)
+				.construct();
+	}
 	
 	public <T> IFuture<T> push(Supplier<T> task) {
 		QueuedAction<T> action = new QueuedAction<T>(task);

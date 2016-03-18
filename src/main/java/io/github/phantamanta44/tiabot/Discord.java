@@ -3,13 +3,15 @@ package io.github.phantamanta44.tiabot;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import io.github.phantamanta44.tiabot.core.EventDispatcher;
 import io.github.phantamanta44.tiabot.core.command.CommandDispatcher;
+import io.github.phantamanta44.tiabot.util.ThreadPoolFactory;
+import io.github.phantamanta44.tiabot.util.ThreadPoolFactory.PoolType;
+import io.github.phantamanta44.tiabot.util.ThreadPoolFactory.QueueType;
 import sx.blah.discord.api.ClientBuilder;
 import sx.blah.discord.api.DiscordException;
 import sx.blah.discord.api.IDiscordClient;
@@ -25,6 +27,7 @@ import sx.blah.discord.handle.obj.Presences;
 public class Discord {
 	
 	private static final Discord instance = new Discord();
+	private static ScheduledExecutorService taskPool;
 	
 	public static Discord getInstance() {
 		return instance;
@@ -32,7 +35,13 @@ public class Discord {
 	
 	private IDiscordClient dcCli;
 	private Runnable readyCb;
-	private ScheduledExecutorService taskPool = Executors.newSingleThreadScheduledExecutor();
+	
+	static {
+		taskPool = new ThreadPoolFactory()
+				.withPool(PoolType.SCHEDULED)
+				.withQueue(QueueType.CACHED)
+				.construct();
+	}
 	
 	public Discord buildClient(String email, String pass) throws DiscordException {
 		TiaBot.logger.info("Building Discord API...");

@@ -6,7 +6,6 @@ import java.io.FileReader;
 import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -16,6 +15,9 @@ import io.github.phantamanta44.tiabot.core.ICTListener;
 import io.github.phantamanta44.tiabot.core.context.IEventContext;
 import io.github.phantamanta44.tiabot.util.ChanceList;
 import io.github.phantamanta44.tiabot.util.MessageUtils;
+import io.github.phantamanta44.tiabot.util.ThreadPoolFactory;
+import io.github.phantamanta44.tiabot.util.ThreadPoolFactory.PoolType;
+import io.github.phantamanta44.tiabot.util.ThreadPoolFactory.QueueType;
 import sx.blah.discord.handle.impl.events.MessageReceivedEvent;
 import sx.blah.discord.handle.obj.IUser;
 
@@ -24,8 +26,15 @@ public class DuelManager implements ICTListener {
 	private static final File DUEL_FILE = new File("duel.txt");
 	private static final ChanceList<String> words = new ChanceList<>();
 	
-	private static ScheduledExecutorService taskPool = Executors.newSingleThreadScheduledExecutor();
+	private static ScheduledExecutorService taskPool;
 	private static Map<String, Duel> duels = new ConcurrentHashMap<>();
+	
+	static {
+		taskPool = new ThreadPoolFactory()
+				.withPool(PoolType.SCHEDULED)
+				.withQueue(QueueType.CACHED)
+				.construct();
+	}
 	
 	public DuelManager() {
 		try (BufferedReader strIn = new BufferedReader(new FileReader(DUEL_FILE))) {

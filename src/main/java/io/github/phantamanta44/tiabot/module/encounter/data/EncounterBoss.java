@@ -194,7 +194,7 @@ public class EncounterBoss implements ITurnable, ISerializable, Cloneable {
 	
 	@Override
 	public void cancelTurn() {
-		throw new UnsupportedOperationException();
+		// NO-OP
 	}
 	
 }

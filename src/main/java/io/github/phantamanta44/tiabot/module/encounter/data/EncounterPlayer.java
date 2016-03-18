@@ -7,11 +7,11 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Random;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.apache.commons.lang3.mutable.MutableInt;
 
 import com.google.gson.JsonArray;
@@ -330,7 +330,7 @@ public class EncounterPlayer implements ITurnable, ICriticalChance, ISerializabl
 			.append("Critical Strike Damage: %.0f%%")
 			.toString();
 	
-	private MutableBoolean done = new MutableBoolean(false);
+	private volatile AtomicBoolean done = new AtomicBoolean(false);
 	private Predicate<IEventContext> expected = null;
 	private EncounterContext ec;
 	private Map<String, MutableInt> cd = new HashMap<>();
@@ -344,7 +344,7 @@ public class EncounterPlayer implements ITurnable, ICriticalChance, ISerializabl
 		if (expected != null) {
 			if (expected.test(ctx)) {
 				synchronized (done) {
-					done.setTrue();
+					done.set(true);
 					done.notify();
 				}
 			}
@@ -353,7 +353,7 @@ public class EncounterPlayer implements ITurnable, ICriticalChance, ISerializabl
 		}
 		String msg = ctx.getMessage().getContent();
 		boolean isDone = false;
-		if (msg.startsWith("attack")) {
+		if (msg.toLowerCase().startsWith("attack")) {
 			ctx.sendMessage("Who do you want to attack?");
 			expected = c -> {
 				try {
@@ -369,7 +369,7 @@ public class EncounterPlayer implements ITurnable, ICriticalChance, ISerializabl
 				}
 			};
 		}
-		else if (msg.startsWith("cast")) {
+		else if (msg.toLowerCase().startsWith("cast")) {
 			try {
 				String spellName = msg.split("\\s", 2)[1];
 				EncounterSpell spell = Arrays.stream(baseKit)
@@ -478,7 +478,7 @@ public class EncounterPlayer implements ITurnable, ICriticalChance, ISerializabl
 				ctx.sendMessage("You must specify a spell to use!");
 			}
 		}
-		else if (msg.startsWith("item")) {
+		else if (msg.toLowerCase().startsWith("item")) {
 			try {
 				String itemName = msg.split("\\s", 2)[1];
 				EncounterItem item = inv.stream()
@@ -516,25 +516,25 @@ public class EncounterPlayer implements ITurnable, ICriticalChance, ISerializabl
 				ctx.sendMessage("You must specify an item to use!");
 			}
 		}
-		else if (msg.startsWith("spells")) {
+		else if (msg.toLowerCase().startsWith("spells")) {
 			ctx.sendMessage("__**Spellbook:**__\n%s", Arrays.stream(baseKit)
 					.map(s -> String.format("**%s** *(%s Mana) (%s Cooldown)*\n%s", s.getName(), s.getManaCost(), s.getCooldown(), s.getDesc()))
 					.reduce((a, b) -> a.concat("\n\n").concat(b)).get());
 		}
-		else if (msg.startsWith("inv")) {
+		else if (msg.toLowerCase().startsWith("inv")) {
 			ctx.sendMessage("__**Inventory:**__\n%s\nUse `%sencitem <item>` to learn more about an item.", inv.stream()
 					.map(i -> i.getName())
 					.reduce((a, b) -> a.concat(", ").concat(b)).orElse("(You have no items.)"), TiaBot.getPrefix());
 		}
-		else if (msg.startsWith("stats"))
+		else if (msg.toLowerCase().startsWith("stats"))
 			ctx.sendMessage(STAT_FORMAT, getDamageModifier(), getAbilityPower(), getDefenseModifier(), getArmorPen() * 100D, getLifeSteal() * 100D, getCritChance() * 100D, getCritModifier() * 100D);
-		else if (msg.startsWith("skip")) {
+		else if (msg.toLowerCase().startsWith("skip")) {
 			ctx.sendMessage("%s skipped their turn.", getName());
 			isDone = true;
 		}
 		if (isDone) {
 			synchronized (done) {
-				done.setTrue();
+				done.set(true);
 				done.notify();
 			}
 		}
@@ -543,7 +543,8 @@ public class EncounterPlayer implements ITurnable, ICriticalChance, ISerializabl
 	@Override
 	public TurnFuture onTurn(IEventContext ctx, Random rand, EncounterContext ec) {
 		this.ec = ec;
-		done.setFalse();
+		done.set(false);
+		expected = null;
 		EventDispatcher.registerHandler(this);
 		return new TurnFuture(() -> {
 			mana = Math.min(mana + getManaGen(), getMaxMana());
@@ -556,10 +557,12 @@ public class EncounterPlayer implements ITurnable, ICriticalChance, ISerializabl
 			ctx.sendMessage("%s\n%s", getStatusMsg(),
 					"\nValid actions: `attack`, `cast <spell>`, `item <item>`, `spells`, `inv`, `stats`, `skip`");
 			synchronized (done) {
-				while (!done.booleanValue()) {
+				while (!done.get() && !Thread.currentThread().isInterrupted()) {
 					try {
 						done.wait();
-					} catch (InterruptedException ex) { }
+					} catch (InterruptedException ex) {
+						Thread.currentThread().interrupt();
+					}
 				}
 			}
 			cancelTurn();

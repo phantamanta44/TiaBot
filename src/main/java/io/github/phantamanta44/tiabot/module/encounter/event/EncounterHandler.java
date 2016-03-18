@@ -6,9 +6,9 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import io.github.phantamanta44.tiabot.core.ICTListener;
@@ -23,6 +23,9 @@ import io.github.phantamanta44.tiabot.module.encounter.data.abst.ITargetable;
 import io.github.phantamanta44.tiabot.module.encounter.data.abst.ITurnable;
 import io.github.phantamanta44.tiabot.module.encounter.data.abst.TurnFuture;
 import io.github.phantamanta44.tiabot.util.MessageUtils;
+import io.github.phantamanta44.tiabot.util.ThreadPoolFactory;
+import io.github.phantamanta44.tiabot.util.ThreadPoolFactory.PoolType;
+import io.github.phantamanta44.tiabot.util.ThreadPoolFactory.QueueType;
 import sx.blah.discord.handle.impl.events.MessageReceivedEvent;
 import sx.blah.discord.handle.obj.IChannel;
 import sx.blah.discord.handle.obj.IUser;
@@ -31,7 +34,21 @@ public class EncounterHandler implements ICTListener {
 
 	private static Map<String, Encounter> inProg = new ConcurrentHashMap<>();
 	private static Map<String, Encounter> engaged = new ConcurrentHashMap<>();
-	private static ScheduledExecutorService taskPool = Executors.newSingleThreadScheduledExecutor();
+	private static ScheduledExecutorService taskPool;
+	
+	static {
+		taskPool = new ThreadPoolFactory()
+				.withPool(PoolType.SCHEDULED)
+				.withQueue(QueueType.CACHED)
+				.construct();
+	}
+	
+	public static String a() {
+		return ((ScheduledThreadPoolExecutor)taskPool).getQueue().stream()
+				.map(r -> r.toString())
+				.reduce((a, b) -> a.concat("\n").concat(b))
+				.orElse("nothing here");
+	}
 	
 	@ListenTo
 	public void onMessageReceived(MessageReceivedEvent event, IEventContext ctx) {
@@ -201,10 +218,17 @@ public class EncounterHandler implements ICTListener {
 				turnStatus = turn.onTurn(ctx, rand, ec);
 				turnTask = taskPool.submit(() -> turnStatus.dispatch());
 				task = taskPool.schedule(() -> {
-					turnTask.cancel(true);
-					turn.cancelTurn();
-					ctx.sendMessage("%s's turn was skipped because they didn't act fast enough.", turn.getName());
-					taskPool.schedule(() -> turnSwap(), 2700L, TimeUnit.MILLISECONDS);
+					try {
+						turnStatus.cancel();
+						turnTask.cancel(true);
+						turn.cancelTurn();
+						ctx.sendMessage("%s's turn was skipped because they didn't act fast enough.", turn.getName());
+						taskPool.schedule(() -> turnSwap(), 2700L, TimeUnit.MILLISECONDS);
+					} catch (Exception ex) {
+						ctx.sendMessage("Fatal error timing out turn! Check console for details.");
+						ex.printStackTrace();
+						cancel();
+					}
 				}, 30000L, TimeUnit.MILLISECONDS);
 				turnStatus.promise(() -> {
 					task.cancel(true);
@@ -263,19 +287,19 @@ public class EncounterHandler implements ICTListener {
 		
 		private void distributeLoot() {
 			try {
-			cancel();
-			final StringBuilder loot = new StringBuilder("__**Loot Distribution:**__\n");
-			Arrays.stream(parts).forEach(p -> {
-				int xp = (int)((float)boss.getExperience() / (float)parts.length);
-				if (dead.contains(p))
-					xp = (int)((float)xp / 1.5F);
-				EncounterItem drop = boss.getDrop(rand);
-				loot.append(String.format("%s received: [%s] [%d XP]\n", p.getName(), drop.getName(), xp));
-				p.addExp(xp);
-				EncounterBank.addItem(p, drop);
-				EncounterData.save();
-			});
-			ctx.sendMessage(loot.append("Excess loot has been deposited in the bank. Use `[]encbank` to access it.").toString());
+				cancel();
+				final StringBuilder loot = new StringBuilder("__**Loot Distribution:**__\n");
+				Arrays.stream(parts).forEach(p -> {
+					int xp = (int)((float)boss.getExperience() / (float)parts.length);
+					if (dead.contains(p))
+						xp = (int)((float)xp / 1.5F);
+					EncounterItem drop = boss.getDrop(rand);
+					loot.append(String.format("%s received: [%s] [%d XP]\n", p.getName(), drop.getName(), xp));
+					p.addExp(xp);
+					EncounterBank.addItem(p, drop);
+					EncounterData.save();
+				});
+				ctx.sendMessage(loot.append("Excess loot has been deposited in the bank. Use `[]encbank` to access it.").toString());
 			} catch (Exception ex) {
 				ctx.sendMessage("Fatal error distributing loot! Check console for details.");
 				ex.printStackTrace();
@@ -286,6 +310,13 @@ public class EncounterHandler implements ICTListener {
 			try {
 				if (task != null)
 					task.cancel(true);
+				if (state == EncounterState.FIGHT) {
+					turns[partInd].cancelTurn();
+					if (turnStatus != null)
+						turnStatus.cancel();
+					if (turnTask != null)
+						turnTask.cancel(true);
+				}
 				Arrays.stream(parts)
 				.filter(p -> p != null)
 				.forEach(p -> {

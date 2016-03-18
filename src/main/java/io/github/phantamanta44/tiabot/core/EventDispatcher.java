@@ -6,8 +6,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -20,6 +18,9 @@ import io.github.phantamanta44.tiabot.core.context.EventContextMessage;
 import io.github.phantamanta44.tiabot.core.context.EventContextUser;
 import io.github.phantamanta44.tiabot.core.context.GenericEventContext;
 import io.github.phantamanta44.tiabot.core.context.IEventContext;
+import io.github.phantamanta44.tiabot.util.ThreadPoolFactory;
+import io.github.phantamanta44.tiabot.util.ThreadPoolFactory.PoolType;
+import io.github.phantamanta44.tiabot.util.ThreadPoolFactory.QueueType;
 import sx.blah.discord.handle.Event;
 import sx.blah.discord.handle.EventSubscriber;
 import sx.blah.discord.handle.obj.IChannel;
@@ -32,8 +33,14 @@ public class EventDispatcher {
 
 	private static final Map<Class<? extends ICTListener>, HandlerSignature> handlerSigMap = new ConcurrentHashMap<>();
 	private static final List<ICTListener> handlers = new CopyOnWriteArrayList<>();
-	private static final ExecutorService executor = Executors.newCachedThreadPool();
-	private static final ScheduledExecutorService taskPool = Executors.newSingleThreadScheduledExecutor();
+	private static final ScheduledExecutorService taskPool;
+	
+	static {
+		taskPool = new ThreadPoolFactory()
+				.withPool(PoolType.SCHEDULED)
+				.withQueue(QueueType.CACHED)
+				.construct();
+	}
 	
 	public static void registerHandler(ICTListener handler) {
 		handlers.add(handler);
@@ -53,7 +60,7 @@ public class EventDispatcher {
 			Method listenerMethod;
 			HandlerSignature handlerSig = handlerSigMap.get(listener.getClass());
 			if ((listenerMethod = handlerSig.listenerMethods.get(eventType)) != null) {
-				final Future<?> eventFuture = executor.submit(() -> {
+				final Future<?> eventFuture = taskPool.submit(() -> {
 					try {
 						listenerMethod.invoke(listener, event, getContext(event));
 					} catch (Exception ex) {

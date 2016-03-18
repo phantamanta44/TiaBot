@@ -1,10 +1,10 @@
 
 package io.github.phantamanta44.tiabot.module.core.event;
 
-import java.util.ArrayDeque;
 import java.util.Deque;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedDeque;
 
 import io.github.phantamanta44.tiabot.Discord;
 import io.github.phantamanta44.tiabot.TiaBot;
@@ -17,15 +17,20 @@ import sx.blah.discord.handle.obj.IUser;
 
 public class RevokeHandler implements ICTListener {
 
-	private static Map<String, Deque<IMessage>> msgStacks = new HashMap<>();
+	private static Map<String, Deque<IMessage>> msgStacks = new ConcurrentHashMap<>();
 	
 	@ListenTo
 	public void onMessageSend(MessageSendEvent event, IEventContext ctx) {
 		if (ctx.getUser().getID().equalsIgnoreCase(Discord.getInstance().getBot().getID())) {
 			String id = ctx.getChannel().getID();
 			if (!msgStacks.containsKey(id))
-				msgStacks.put(id, new ArrayDeque<>());
+				msgStacks.put(id, new ConcurrentLinkedDeque<>());
 			msgStacks.get(id).offer(ctx.getMessage());
+			int qSize = TiaBot.config.getInt("msgQueueSize");
+			if (qSize < 1)
+				qSize = 50;
+			while (msgStacks.get(id).size() > qSize)
+				msgStacks.get(id).pop();
 		}
 	}
 	

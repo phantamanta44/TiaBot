@@ -27,6 +27,7 @@ public class TiaBot {
 	public static void main(String[] args) {
 		try {
 			config.read();
+			setPrefix(config.get("prefix"));
 			getAdmins();
 			Discord.getInstance()
 					.buildClient(config.get("email"), config.get("pass"))
@@ -39,7 +40,6 @@ public class TiaBot {
 	}
 	
 	private static void registerModules() {
-		setPrefix(config.get("prefix"));
 		ModuleManager.registerModule(new CoreModule(), true);
 		ModuleManager.registerModule(new RandomModule(), config.getBoolean("mod.random"));
 		ModuleManager.registerModule(new ScriptModule(), config.getBoolean("mod.scripting"));
