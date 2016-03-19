@@ -10,6 +10,7 @@ import java.util.Set;
 import io.github.phantamanta44.tiabot.module.ModuleManager;
 import io.github.phantamanta44.tiabot.module.core.CoreModule;
 import io.github.phantamanta44.tiabot.module.encounter.EncounterModule;
+import io.github.phantamanta44.tiabot.module.fandom.FandomModule;
 import io.github.phantamanta44.tiabot.module.lol.LoLModule;
 import io.github.phantamanta44.tiabot.module.random.RandomModule;
 import io.github.phantamanta44.tiabot.module.scripting.ScriptModule;
@@ -45,6 +46,7 @@ public class TiaBot {
 		ModuleManager.registerModule(new ScriptModule(), config.getBoolean("mod.scripting"));
 		ModuleManager.registerModule(new LoLModule(), config.getBoolean("mod.lol"));
 		ModuleManager.registerModule(new EncounterModule(), config.getBoolean("mod.encounter"));
+		ModuleManager.registerModule(new FandomModule(), config.getBoolean("mod.fandom"));
 		Runtime.getRuntime().addShutdownHook(new Thread(() -> ModuleManager.onShutdown()));
 	}
 	
