@@ -10,8 +10,8 @@ import com.google.gson.JsonObject;
 
 import io.github.phantamanta44.tiabot.module.encounter.data.EncounterItem;
 import io.github.phantamanta44.tiabot.module.encounter.data.EncounterPlayer;
-import io.github.phantamanta44.tiabot.util.ISerializable;
-import io.github.phantamanta44.tiabot.util.SafeJsonWrapper;
+import io.github.phantamanta44.tiabot.util.data.ISerializable;
+import io.github.phantamanta44.tiabot.util.data.SafeJsonWrapper;
 
 public class EncounterBank {
 	

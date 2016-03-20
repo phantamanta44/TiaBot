@@ -17,6 +17,7 @@ import com.google.gson.JsonParser;
 import io.github.phantamanta44.tiabot.core.command.ICommand;
 import io.github.phantamanta44.tiabot.core.context.IEventContext;
 import io.github.phantamanta44.tiabot.util.MessageUtils;
+import io.github.phantamanta44.tiabot.util.data.CollectionUtils;
 import sx.blah.discord.handle.obj.IUser;
 import sx.blah.discord.util.Requests;
 
@@ -72,7 +73,7 @@ public class CommandHaiku implements ICommand {
 							.collect(Collectors.toList());
 						iter++;
 					} while (poss.isEmpty() && iter < rem);
-					s.append(poss.get(rand.nextInt(poss.size())));
+					s.append(CollectionUtils.any(poss, rand));
 				}
 			}
 			ctx.sendMessage(Arrays.stream(lines)

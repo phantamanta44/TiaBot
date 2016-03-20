@@ -7,8 +7,11 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
+import io.github.phantamanta44.tiabot.module.CTModule;
 import io.github.phantamanta44.tiabot.module.ModuleManager;
+import io.github.phantamanta44.tiabot.module.casino.CasinoModule;
 import io.github.phantamanta44.tiabot.module.core.CoreModule;
+import io.github.phantamanta44.tiabot.module.econ.EconModule;
 import io.github.phantamanta44.tiabot.module.encounter.EncounterModule;
 import io.github.phantamanta44.tiabot.module.fandom.FandomModule;
 import io.github.phantamanta44.tiabot.module.lol.LoLModule;
@@ -42,12 +45,18 @@ public class TiaBot {
 	
 	private static void registerModules() {
 		ModuleManager.registerModule(new CoreModule(), true);
-		ModuleManager.registerModule(new RandomModule(), config.getBoolean("mod.random"));
-		ModuleManager.registerModule(new ScriptModule(), config.getBoolean("mod.scripting"));
-		ModuleManager.registerModule(new LoLModule(), config.getBoolean("mod.lol"));
-		ModuleManager.registerModule(new EncounterModule(), config.getBoolean("mod.encounter"));
-		ModuleManager.registerModule(new FandomModule(), config.getBoolean("mod.fandom"));
+		registerModule(new RandomModule());
+		registerModule(new ScriptModule());
+		registerModule(new LoLModule());
+		registerModule(new EncounterModule());
+		registerModule(new FandomModule());
+		registerModule(new EconModule());
+		registerModule(new CasinoModule());
 		Runtime.getRuntime().addShutdownHook(new Thread(() -> ModuleManager.onShutdown()));
+	}
+	
+	private static void registerModule(CTModule module) {
+		ModuleManager.registerModule(module, config.getBoolean("mod." + module.getName()));
 	}
 	
 	private static void getAdmins() {

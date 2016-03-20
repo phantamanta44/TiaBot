@@ -11,7 +11,7 @@ import com.google.gson.JsonObject;
 
 import io.github.phantamanta44.tiabot.module.lol.LoLModule;
 import io.github.phantamanta44.tiabot.module.lol.dto.LoLChampion.ChampSpell.SpellKey;
-import io.github.phantamanta44.tiabot.util.SafeJsonWrapper;
+import io.github.phantamanta44.tiabot.util.data.SafeJsonWrapper;
 
 public class LoLChampion {
 

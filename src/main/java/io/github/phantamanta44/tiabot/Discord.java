@@ -9,9 +9,9 @@ import java.util.stream.Collectors;
 
 import io.github.phantamanta44.tiabot.core.EventDispatcher;
 import io.github.phantamanta44.tiabot.core.command.CommandDispatcher;
-import io.github.phantamanta44.tiabot.util.ThreadPoolFactory;
-import io.github.phantamanta44.tiabot.util.ThreadPoolFactory.PoolType;
-import io.github.phantamanta44.tiabot.util.ThreadPoolFactory.QueueType;
+import io.github.phantamanta44.tiabot.util.concurrent.ThreadPoolFactory;
+import io.github.phantamanta44.tiabot.util.concurrent.ThreadPoolFactory.PoolType;
+import io.github.phantamanta44.tiabot.util.concurrent.ThreadPoolFactory.QueueType;
 import sx.blah.discord.api.ClientBuilder;
 import sx.blah.discord.api.DiscordException;
 import sx.blah.discord.api.IDiscordClient;

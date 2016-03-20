@@ -1,6 +1,5 @@
 package io.github.phantamanta44.tiabot.module.fandom.command;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map.Entry;
@@ -11,6 +10,7 @@ import com.google.gson.JsonParser;
 
 import io.github.phantamanta44.tiabot.core.command.ICommand;
 import io.github.phantamanta44.tiabot.core.context.IEventContext;
+import io.github.phantamanta44.tiabot.util.data.CollectionUtils;
 import sx.blah.discord.handle.obj.IUser;
 import sx.blah.discord.util.Requests;
 
@@ -43,8 +43,7 @@ public class CommandBestPony implements ICommand {
 		JsonParser parser = new JsonParser();
 		try {
 			JsonObject ponies = parser.parse(Requests.GET.makeRequest(PONY_URL)).getAsJsonObject();
-			List<Entry<String, JsonElement>> ponyList = new ArrayList<>(ponies.entrySet());
-			Entry<String, JsonElement> bestPony = ponyList.get((int)Math.floor(Math.random() * ponyList.size()));
+			Entry<String, JsonElement> bestPony = CollectionUtils.any(ponies.entrySet());
 			ctx.sendMessage("**%s is best pony!**\n%s", bestPony.getKey(), bestPony.getValue().getAsString());
 		} catch (Exception ex) {
 			ctx.sendMessage("Best pony could not be found!");

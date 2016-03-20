@@ -6,7 +6,7 @@ import java.util.stream.StreamSupport;
 
 import com.google.gson.JsonObject;
 
-import io.github.phantamanta44.tiabot.util.SafeJsonWrapper;
+import io.github.phantamanta44.tiabot.util.data.SafeJsonWrapper;
 
 public class LoLGame {
 

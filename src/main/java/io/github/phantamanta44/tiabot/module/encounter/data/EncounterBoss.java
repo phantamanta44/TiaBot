@@ -16,11 +16,11 @@ import io.github.phantamanta44.tiabot.module.encounter.data.EncounterSpell.Spell
 import io.github.phantamanta44.tiabot.module.encounter.data.abst.ITargetable;
 import io.github.phantamanta44.tiabot.module.encounter.data.abst.ITurnable;
 import io.github.phantamanta44.tiabot.module.encounter.data.abst.TurnFuture;
-import io.github.phantamanta44.tiabot.util.ChanceList;
-import io.github.phantamanta44.tiabot.util.CollectionUtils;
-import io.github.phantamanta44.tiabot.util.ISerializable;
 import io.github.phantamanta44.tiabot.util.MathUtils;
-import io.github.phantamanta44.tiabot.util.SafeJsonWrapper;
+import io.github.phantamanta44.tiabot.util.data.ChanceList;
+import io.github.phantamanta44.tiabot.util.data.CollectionUtils;
+import io.github.phantamanta44.tiabot.util.data.ISerializable;
+import io.github.phantamanta44.tiabot.util.data.SafeJsonWrapper;
 
 public class EncounterBoss implements ITurnable, ISerializable, Cloneable {
 	

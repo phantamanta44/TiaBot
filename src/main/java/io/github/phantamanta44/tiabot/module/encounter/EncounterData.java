@@ -22,8 +22,8 @@ import io.github.phantamanta44.tiabot.TiaBot;
 import io.github.phantamanta44.tiabot.module.encounter.data.EncounterBoss;
 import io.github.phantamanta44.tiabot.module.encounter.data.EncounterItem;
 import io.github.phantamanta44.tiabot.module.encounter.data.EncounterPlayer;
-import io.github.phantamanta44.tiabot.util.ChanceList;
 import io.github.phantamanta44.tiabot.util.MessageUtils;
+import io.github.phantamanta44.tiabot.util.data.ChanceList;
 import sx.blah.discord.handle.obj.IUser;
 
 public class EncounterData {

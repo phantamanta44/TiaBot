@@ -1,4 +1,4 @@
-package io.github.phantamanta44.tiabot.util;
+package io.github.phantamanta44.tiabot.util.data;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -32,6 +32,10 @@ public class ChanceList<T> {
 		return String.format("ChanceSet {%s}", chanceSet.stream()
 				.map(e -> e.toString())
 				.reduce((a, b) -> a.concat(", ").concat(b)).orElse(""));
+	}
+
+	public int size() {
+		return chanceSet.size();
 	}
 	
 }

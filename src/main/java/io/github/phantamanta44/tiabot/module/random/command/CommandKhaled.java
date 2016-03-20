@@ -6,7 +6,7 @@ import java.util.Random;
 
 import io.github.phantamanta44.tiabot.core.command.ICommand;
 import io.github.phantamanta44.tiabot.core.context.IEventContext;
-import io.github.phantamanta44.tiabot.util.ChanceList;
+import io.github.phantamanta44.tiabot.util.data.ChanceList;
 import sx.blah.discord.handle.obj.IUser;
 
 public class CommandKhaled implements ICommand {

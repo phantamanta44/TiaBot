@@ -2,23 +2,20 @@ package io.github.phantamanta44.tiabot.module.random.command;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Random;
 
 import io.github.phantamanta44.tiabot.core.command.ICommand;
 import io.github.phantamanta44.tiabot.core.context.IEventContext;
 import io.github.phantamanta44.tiabot.util.MessageUtils;
-import io.github.phantamanta44.tiabot.util.data.ChanceList;
+import io.github.phantamanta44.tiabot.util.data.CollectionUtils;
 import sx.blah.discord.handle.obj.IUser;
 
-public class CommandSlap implements ICommand {
+public class CommandDecide implements ICommand {
 
-	private static final List<String> ALIASES = Arrays.asList(new String[] {"whack"});
-	private static final ChanceList<String> slapStrings = new ChanceList<>(
-			"\\*Slaps %s\\*", "\\*Smacks %s with a fish\\*", "\\*Whacks %s\\*", "\\*Wallops %s\\*");
+	private static final List<String> ALIASES = Arrays.asList(new String[] {"choose"});
 	
 	@Override
 	public String getName() {
-		return "slap";
+		return "decide";
 	}
 
 	@Override
@@ -28,27 +25,27 @@ public class CommandSlap implements ICommand {
 
 	@Override
 	public String getDesc() {
-		return "Smacks another person about the face.";
+		return "Pick between multiple decisions.";
 	}
 
 	@Override
 	public String getUsage() {
-		return "slap <@person>";
+		return "decide <choice> or <choice> [or <choice>...]";
 	}
 
 	@Override
 	public void execute(IUser sender, String[] args, IEventContext ctx) {
-		if (args.length < 1) {
-			ctx.sendMessage("There's nobody to slap!");
+		if (args.length < 3) {
+			ctx.sendMessage("You must supply at least two choices, separated by \"or\"!");
 			return;
 		}
-		IUser user = MessageUtils.resolveMention(args[0]);
-		if (user == null) {
-			ctx.sendMessage("There's nobody to slap!");
+		String msg = MessageUtils.concat(args).trim();
+		if (msg.startsWith("or") || msg.endsWith("or")) {
+			ctx.sendMessage("You can't have a trailing \"or\"!");
 			return;
 		}
-		Random rand = new Random();
-		ctx.sendMessage(slapStrings.getAtRandom(rand), user.mention());
+		String[] choices = msg.split("or");
+		ctx.sendMessage("I choose **%s**!", CollectionUtils.any(choices).trim());
 	}
 
 	@Override
@@ -60,10 +57,10 @@ public class CommandSlap implements ICommand {
 	public String getPermissionMessage(IUser sender, IEventContext ctx) {
 		throw new UnsupportedOperationException();
 	}
-	
+
 	@Override
 	public String getEnglishInvocation() {
-		return ".*(?:slap|whack|wallop) (?<a0><\\S+>).*";
+		return null;
 	}
 
 }

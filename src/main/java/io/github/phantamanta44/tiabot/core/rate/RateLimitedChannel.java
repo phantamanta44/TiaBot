@@ -12,7 +12,7 @@ import com.github.fge.lambdas.runnable.ThrowingRunnable;
 import com.github.fge.lambdas.supplier.ThrowingSupplier;
 
 import io.github.phantamanta44.tiabot.TiaBot;
-import io.github.phantamanta44.tiabot.util.IFuture;
+import io.github.phantamanta44.tiabot.util.concurrent.IFuture;
 import sx.blah.discord.api.DiscordException;
 import sx.blah.discord.api.MissingPermissionsException;
 import sx.blah.discord.handle.obj.IChannel;

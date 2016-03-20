@@ -6,8 +6,8 @@ import io.github.phantamanta44.tiabot.module.encounter.BattleContext;
 import io.github.phantamanta44.tiabot.module.encounter.data.abst.ICriticalChance;
 import io.github.phantamanta44.tiabot.module.encounter.data.abst.IModifierSusceptible;
 import io.github.phantamanta44.tiabot.module.encounter.script.EncounterScript;
-import io.github.phantamanta44.tiabot.util.ISerializable;
-import io.github.phantamanta44.tiabot.util.SafeJsonWrapper;
+import io.github.phantamanta44.tiabot.util.data.ISerializable;
+import io.github.phantamanta44.tiabot.util.data.SafeJsonWrapper;
 
 public class EncounterItem implements IModifierSusceptible, ICriticalChance, ISerializable {
 

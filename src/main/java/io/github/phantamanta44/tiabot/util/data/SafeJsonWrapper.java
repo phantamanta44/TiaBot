@@ -1,4 +1,4 @@
-package io.github.phantamanta44.tiabot.util;
+package io.github.phantamanta44.tiabot.util.data;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;

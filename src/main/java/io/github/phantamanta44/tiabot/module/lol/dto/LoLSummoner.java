@@ -2,7 +2,7 @@ package io.github.phantamanta44.tiabot.module.lol.dto;
 
 import com.google.gson.JsonObject;
 
-import io.github.phantamanta44.tiabot.util.SafeJsonWrapper;
+import io.github.phantamanta44.tiabot.util.data.SafeJsonWrapper;
 
 public class LoLSummoner {
 	

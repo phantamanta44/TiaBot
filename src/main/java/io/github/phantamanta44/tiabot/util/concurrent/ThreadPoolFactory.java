@@ -1,4 +1,4 @@
-package io.github.phantamanta44.tiabot.util;
+package io.github.phantamanta44.tiabot.util.concurrent;
 
 import java.util.List;
 import java.util.concurrent.Callable;

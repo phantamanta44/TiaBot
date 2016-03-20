@@ -35,7 +35,7 @@ public class CommandEncBank implements ICommand {
 
 	@Override
 	public String getUsage() {
-		return "encbank [deposit|withdraw <item>]";
+		return "encbank deposit|withdraw <item>";
 	}
 
 	@Override

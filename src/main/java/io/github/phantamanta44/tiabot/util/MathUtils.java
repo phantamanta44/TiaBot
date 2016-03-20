@@ -14,4 +14,16 @@ public class MathUtils {
 		 return Math.max(Math.min(n, u), l);
 	}
 	
+	public static boolean bounds(int n, int l, int u) {
+		return n >= l && n < u;
+	}
+	
+	public static boolean bounds(float n, float l, float u) {
+		return n >= l && n < u;
+	}
+	
+	public static boolean bounds(double n, double l, double u) {
+		return n >= l && n < u;
+	}
+	
 }

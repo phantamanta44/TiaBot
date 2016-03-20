@@ -13,11 +13,11 @@ import java.util.concurrent.TimeUnit;
 import io.github.phantamanta44.tiabot.Discord;
 import io.github.phantamanta44.tiabot.core.ICTListener;
 import io.github.phantamanta44.tiabot.core.context.IEventContext;
-import io.github.phantamanta44.tiabot.util.ChanceList;
 import io.github.phantamanta44.tiabot.util.MessageUtils;
-import io.github.phantamanta44.tiabot.util.ThreadPoolFactory;
-import io.github.phantamanta44.tiabot.util.ThreadPoolFactory.PoolType;
-import io.github.phantamanta44.tiabot.util.ThreadPoolFactory.QueueType;
+import io.github.phantamanta44.tiabot.util.concurrent.ThreadPoolFactory;
+import io.github.phantamanta44.tiabot.util.concurrent.ThreadPoolFactory.PoolType;
+import io.github.phantamanta44.tiabot.util.concurrent.ThreadPoolFactory.QueueType;
+import io.github.phantamanta44.tiabot.util.data.ChanceList;
 import sx.blah.discord.handle.impl.events.MessageReceivedEvent;
 import sx.blah.discord.handle.obj.IUser;
 

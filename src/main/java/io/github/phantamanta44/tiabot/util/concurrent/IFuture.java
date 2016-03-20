@@ -1,4 +1,4 @@
-package io.github.phantamanta44.tiabot.util;
+package io.github.phantamanta44.tiabot.util.concurrent;
 
 public interface IFuture<T> {
 

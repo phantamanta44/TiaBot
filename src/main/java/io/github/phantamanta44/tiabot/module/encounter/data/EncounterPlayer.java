@@ -31,10 +31,10 @@ import io.github.phantamanta44.tiabot.module.encounter.data.abst.ITargetable;
 import io.github.phantamanta44.tiabot.module.encounter.data.abst.ITurnable;
 import io.github.phantamanta44.tiabot.module.encounter.data.abst.TurnFuture;
 import io.github.phantamanta44.tiabot.module.encounter.event.EncounterHandler;
-import io.github.phantamanta44.tiabot.util.ISerializable;
 import io.github.phantamanta44.tiabot.util.MathUtils;
 import io.github.phantamanta44.tiabot.util.MessageUtils;
-import io.github.phantamanta44.tiabot.util.SafeJsonWrapper;
+import io.github.phantamanta44.tiabot.util.data.ISerializable;
+import io.github.phantamanta44.tiabot.util.data.SafeJsonWrapper;
 import sx.blah.discord.handle.impl.events.MessageReceivedEvent;
 import sx.blah.discord.handle.obj.IUser;
 

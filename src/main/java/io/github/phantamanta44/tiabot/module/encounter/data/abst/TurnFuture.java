@@ -1,6 +1,6 @@
 package io.github.phantamanta44.tiabot.module.encounter.data.abst;
 
-import io.github.phantamanta44.tiabot.util.IFuture;
+import io.github.phantamanta44.tiabot.util.concurrent.IFuture;
 
 @SuppressWarnings("rawtypes")
 public class TurnFuture implements IFuture {

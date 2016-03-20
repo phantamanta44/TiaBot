@@ -8,15 +8,14 @@ import java.util.regex.Pattern;
 import io.github.phantamanta44.tiabot.core.command.ICommand;
 import io.github.phantamanta44.tiabot.core.context.IEventContext;
 import io.github.phantamanta44.tiabot.util.MessageUtils;
+import io.github.phantamanta44.tiabot.util.http.HttpUtils;
 import sx.blah.discord.handle.obj.IUser;
-import sx.blah.discord.util.Requests;
 
 public class CommandAnimeChar implements ICommand {
 	
-	private static final String CHAR_DB = "http://www.animecharactersdatabase.com/searchacdb.php?i=allchars&q=%s";
 	private static final Pattern CHAR_PAGE_PAT = Pattern.compile("character\\.php\\?id=\\d+");
 	private static final Pattern CHAR_ANIM_PAT = Pattern.compile("> (.+) from (.+) \\|");
-	private static final Pattern CHAR_IMG_PAT = Pattern.compile("<a href=\"(http://ami\\.animecharactersdatabase\\.com/uploads/chars/\\S+.png)\"><img");
+	private static final Pattern CHAR_IMG_PAT = Pattern.compile("<a href=\"(http://ami.animecharactersdatabase.com/(?:\\S+))\">View Full Size Image</a>");
 	private static final Pattern CHAR_PROP_PAT = Pattern.compile(
 			"<dl>\\s+"
 			+ "(<dt class=\"ace\">)ID</dt>\\s+<dd>\\d+</dd>\\s+"
@@ -57,13 +56,13 @@ public class CommandAnimeChar implements ICommand {
 		}
 		String name = MessageUtils.concat(args);
 		try {
-			String res = Requests.GET.makeRequest(String.format(CHAR_DB, name));
+			String res = HttpUtils.requestXml("http://www.animecharactersdatabase.com/rapidsearch_ajax.php?s=" + name);
 			Matcher mat = CHAR_PAGE_PAT.matcher(res);
 			if (!mat.find()) {
 				ctx.sendMessage("No results found!");
 				return;
 			}
-			String charPage = Requests.GET.makeRequest("http://www.animecharactersdatabase.com/" + mat.group());
+			String charPage = HttpUtils.requestXml("http://www.animecharactersdatabase.com/" + mat.group());
 			
 			Matcher animeMatcher = CHAR_ANIM_PAT.matcher(charPage);
 			animeMatcher.find();

@@ -7,10 +7,10 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
-import io.github.phantamanta44.tiabot.util.IFuture;
-import io.github.phantamanta44.tiabot.util.ThreadPoolFactory;
-import io.github.phantamanta44.tiabot.util.ThreadPoolFactory.PoolType;
-import io.github.phantamanta44.tiabot.util.ThreadPoolFactory.QueueType;
+import io.github.phantamanta44.tiabot.util.concurrent.IFuture;
+import io.github.phantamanta44.tiabot.util.concurrent.ThreadPoolFactory;
+import io.github.phantamanta44.tiabot.util.concurrent.ThreadPoolFactory.PoolType;
+import io.github.phantamanta44.tiabot.util.concurrent.ThreadPoolFactory.QueueType;
 
 public class RateLimitQueue {
 
