@@ -36,7 +36,7 @@ public class EconData {
 			bank.forEach((k, v) -> bankObj.addProperty(k, v.getValue()));
 			strOut.println(gson.toJson(bankObj));
 		} catch (Exception ex) {
-			TiaBot.logger.severe("Failed to save token data!");
+			TiaBot.logger.severe("Failed to save economy data!");
 			ex.printStackTrace();
 		}
 	}
@@ -48,7 +48,7 @@ public class EconData {
 			JsonObject data = parser.parse(strIn).getAsJsonObject();
 			data.entrySet().forEach(e -> bank.put(e.getKey(), new MutableLong(e.getValue().getAsLong())));
 		} catch (Exception ex) {
-			TiaBot.logger.severe("Failed to load token data!");
+			TiaBot.logger.severe("Failed to load economy data!");
 			ex.printStackTrace();
 		}
 	}
@@ -70,11 +70,11 @@ public class EconData {
 	public static void addBits(IUser user, long amt) {
 		MutableLong cnt = getBitCount(user.getID());
 		cnt.setValue(Math.max(cnt.getValue() + amt, 0));
+		save();
 	}
 	
 	public static void removeBits(IUser user, long amt) {
-		MutableLong cnt = getBitCount(user.getID());
-		cnt.setValue(Math.max(cnt.getValue() - amt, 0));
+		addBits(user, -amt);
 	}
 	
 	public static Stream<Entry<String, Long>> streamBankData() {

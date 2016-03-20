@@ -9,9 +9,9 @@ import java.util.Set;
 
 import io.github.phantamanta44.tiabot.module.CTModule;
 import io.github.phantamanta44.tiabot.module.ModuleManager;
-import io.github.phantamanta44.tiabot.module.casino.CasinoModule;
 import io.github.phantamanta44.tiabot.module.core.CoreModule;
 import io.github.phantamanta44.tiabot.module.econ.EconModule;
+import io.github.phantamanta44.tiabot.module.econplus.EconPlusModule;
 import io.github.phantamanta44.tiabot.module.encounter.EncounterModule;
 import io.github.phantamanta44.tiabot.module.fandom.FandomModule;
 import io.github.phantamanta44.tiabot.module.lol.LoLModule;
@@ -51,7 +51,7 @@ public class TiaBot {
 		registerModule(new EncounterModule());
 		registerModule(new FandomModule());
 		registerModule(new EconModule());
-		registerModule(new CasinoModule());
+		registerModule(new EconPlusModule());
 		Runtime.getRuntime().addShutdownHook(new Thread(() -> ModuleManager.onShutdown()));
 	}
 	

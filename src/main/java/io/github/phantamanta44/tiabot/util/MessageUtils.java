@@ -59,6 +59,12 @@ public class MessageUtils {
 			return str;
 		return Character.toUpperCase(str.charAt(0)) + str.substring(1);
 	}
+	
+	public static String decapitalize(String str) {
+		if (str.length() < 1)
+			return str;
+		return Character.toLowerCase(str.charAt(0)) + str.substring(1);
+	}
 
 	public static String rightPad(String str, int len, char c) {
 		if (str.length() >= len)

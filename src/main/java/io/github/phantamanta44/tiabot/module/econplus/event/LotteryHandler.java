@@ -1,11 +1,14 @@
-package io.github.phantamanta44.tiabot.module.casino.event;
+package io.github.phantamanta44.tiabot.module.econplus.event;
 
+import java.util.Iterator;
 import java.util.Map;
-import java.util.Random;
+import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+
+import org.apache.commons.lang3.mutable.MutableInt;
 
 import io.github.phantamanta44.tiabot.Discord;
 import io.github.phantamanta44.tiabot.core.ICTListener;
@@ -14,7 +17,6 @@ import io.github.phantamanta44.tiabot.module.econ.EconData;
 import io.github.phantamanta44.tiabot.util.concurrent.ThreadPoolFactory;
 import io.github.phantamanta44.tiabot.util.concurrent.ThreadPoolFactory.PoolType;
 import io.github.phantamanta44.tiabot.util.concurrent.ThreadPoolFactory.QueueType;
-import io.github.phantamanta44.tiabot.util.data.ChanceList;
 import sx.blah.discord.handle.impl.events.MessageReceivedEvent;
 import sx.blah.discord.handle.obj.IChannel;
 import sx.blah.discord.handle.obj.IUser;
@@ -35,8 +37,8 @@ public class LotteryHandler implements ICTListener {
 		return inProg.containsKey(chan.getID());
 	}
 	
-	public static void newLottery(IEventContext ctx, long amount, long ticketPrc, int ticketCnt) {
-		inProg.put(ctx.getChannel().getID(), new Lottery(ctx, amount, ticketPrc, ticketCnt));
+	public static void newLottery(IEventContext ctx, long amount, long ticketPrc, int time) {
+		inProg.put(ctx.getChannel().getID(), new Lottery(ctx, amount, ticketPrc, time));
 	}
 	
 	@ListenTo
@@ -49,19 +51,17 @@ public class LotteryHandler implements ICTListener {
 
 		private IEventContext ctx;
 		private long jackpot, price;
-		private int tickets;
-		private ChanceList<String> contestants = new ChanceList<>();
+		private Map<String, MutableInt> contestants;
 		private ScheduledFuture<?> termTask;
 		
-		public Lottery(IEventContext ctx, long amount, long ticketPrc, int ticketCnt) {
+		public Lottery(IEventContext ctx, long amount, long ticketPrc, int time) {
 			this.ctx = ctx;
 			this.jackpot = amount;
 			this.price = ticketPrc;
-			this.tickets = ticketCnt;
-			ctx.sendMessage("__**A lottery is beginning for %d bits!**__\nAvailable Tickets: %d\nPrice Per Ticket: %d bit(s)\nType `lotto me <#tickets>` to buy in.\n**You have 5 minutes to buy tickets!**", jackpot, tickets, price);
+			ctx.sendMessage("__**A lottery is beginning for %d bits!**__\nPrice Per Ticket: %d bit(s)\nType `lotto me <#tickets>` to buy in.\n**You have %d minutes to buy tickets!**", jackpot, price, time);
 			termTask = taskPool.schedule(() -> {
 				distributeRewards();
-			}, 5L, TimeUnit.MINUTES);
+			}, time, TimeUnit.MINUTES);
 		}
 
 		public void onMessage(IEventContext ctx) {
@@ -83,24 +83,21 @@ public class LotteryHandler implements ICTListener {
 				ctx.sendMessage("%s: Invalid number of tickets!", ctx.getUser().mention());
 				return;
 			}
-			if (tickets < toBuy) {
-				ctx.sendMessage("%s: There aren't enough remaining tickets to buy this many!", ctx.getUser().mention());
-				return;
-			}
 			long totalPrc = price * toBuy;
 			if (EconData.getBits(user) < totalPrc) {
 				ctx.sendMessage("%s: You can't afford to buy this many tickets!", ctx.getUser().mention());
 				return;
 			}
-			tickets -= toBuy;
 			EconData.removeBits(user, totalPrc);
 			jackpot += totalPrc;
-			for (int i = 0; i < toBuy; i++)
-				contestants.addOutcome(user.getID());
+			MutableInt userTickets = contestants.get(user.getID());
+			if (userTickets == null) {
+				userTickets = new MutableInt();
+				contestants.put(user.getID(), userTickets);
+			}
+			userTickets.add(toBuy);
 			ctx.sendMessage("**%s** just bought **%d** tickets for **%d bits**, increasing the jackpot to **%d bits**!",
 					ctx.getUser().mention(), toBuy, totalPrc, jackpot);
-			if (tickets < 1)
-				distributeRewards();
 		}
 		
 		public void distributeRewards() {
@@ -110,9 +107,22 @@ public class LotteryHandler implements ICTListener {
 				EconData.addBits(ctx.getUser(), jackpot);
 				return;
 			}
-			IUser winner = Discord.getInstance().getUserById(contestants.getAtRandom(new Random()));
+			IUser winner = null;
+			int draw = (int)Math.floor(Math.random() * contestants.values().stream()
+					.map(v -> v.getValue())
+					.reduce((a, b) -> a + b).get());
+			Iterator<Entry<String, MutableInt>> iter = contestants.entrySet().iterator();
+			while (iter.hasNext() && draw > 0) {
+				Entry<String, MutableInt> entry = iter.next();
+				while (entry.getValue().getValue() > 0 && draw > 0) {
+					entry.getValue().decrement();
+					draw--;
+				}
+				if (draw == 0)
+					winner = Discord.getInstance().getUserById(entry.getKey());
+			}
 			EconData.addBits(winner, jackpot);
-			ctx.sendMessage("**The lottery is over!**\n**%s** won a jackpot of **%d bits**! Congratulations!", winner.getName(), jackpot);
+			ctx.sendMessage("**The lottery is over!**\n**%s** won a jackpot of **%d bits**! Congratulations!", winner.mention(), jackpot);
 		}
 		
 		public void terminate() {

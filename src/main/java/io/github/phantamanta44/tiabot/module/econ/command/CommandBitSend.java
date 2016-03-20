@@ -44,6 +44,10 @@ public class CommandBitSend implements ICommand {
 			ctx.sendMessage("No such user!");
 			return;
 		}
+		if (target == sender) {
+			ctx.sendMessage("You can't send bits to yourself!");
+			return;
+		}
 		long amount;
 		try {
 			amount = Long.parseLong(args[1]);
@@ -57,9 +61,9 @@ public class CommandBitSend implements ICommand {
 			ctx.sendMessage("You don't have enough bits to make this transaction!");
 			return;
 		}
-		EconData.removeBits(target, amount);
+		EconData.removeBits(sender, amount);
 		EconData.addBits(target, amount);
-		ctx.sendMessage("**Transaction completed successfully.** New balances:\n**%s**: %d\n**%s**: %d",
+		ctx.sendMessage("**Transaction completed successfully.** New balances:\n**%s**: %d bits\n**%s**: %d bits",
 				sender.getName(), EconData.getBits(sender), target.getName(), EconData.getBits(target));
 	}
 

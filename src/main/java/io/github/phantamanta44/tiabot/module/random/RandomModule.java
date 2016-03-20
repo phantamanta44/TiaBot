@@ -1,6 +1,7 @@
 package io.github.phantamanta44.tiabot.module.random;
 import io.github.phantamanta44.tiabot.module.CTModule;
 import io.github.phantamanta44.tiabot.module.random.command.CommandBash;
+import io.github.phantamanta44.tiabot.module.random.command.CommandDecide;
 import io.github.phantamanta44.tiabot.module.random.command.CommandDuel;
 import io.github.phantamanta44.tiabot.module.random.command.CommandHaiku;
 import io.github.phantamanta44.tiabot.module.random.command.CommandKhaled;
@@ -13,6 +14,7 @@ public class RandomModule extends CTModule {
 
 	public RandomModule() {
 		commands.add(new CommandBash());
+		commands.add(new CommandDecide());
 		commands.add(new CommandDuel());
 		commands.add(new CommandHaiku());
 		commands.add(new CommandKhaled());
