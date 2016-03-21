@@ -42,6 +42,7 @@ public class EconData {
 	}
 	
 	public static void load() {
+		bank.clear();
 		JsonParser parser = new JsonParser();
 		try (BufferedReader strIn = new BufferedReader(new FileReader(DATA_FILE))) {
 			bank.clear();

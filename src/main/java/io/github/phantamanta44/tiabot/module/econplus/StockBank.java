@@ -48,6 +48,7 @@ public class StockBank {
 	}
 	
 	public static void load() {
+		bank.clear();
 		JsonParser parser = new JsonParser();
 		try (BufferedReader strIn = new BufferedReader(new FileReader(DATA_FILE))) {
 			bank.clear();
@@ -55,7 +56,7 @@ public class StockBank {
 			data.entrySet().forEach(e -> {
 				JsonObject o = e.getValue().getAsJsonObject();
 				Map<String, MutableInt> acc = new ConcurrentHashMap<>();
-				o.entrySet().forEach(e2 -> acc.put(e.getKey(), new MutableInt(e.getValue().getAsInt())));
+				o.entrySet().forEach(e2 -> acc.put(e2.getKey(), new MutableInt(e2.getValue().getAsInt())));
 				bank.put(e.getKey(), acc);
 			});
 		} catch (Exception ex) {

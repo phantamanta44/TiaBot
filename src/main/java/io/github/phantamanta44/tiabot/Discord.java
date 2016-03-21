@@ -21,6 +21,7 @@ import sx.blah.discord.handle.impl.events.DiscordDisconnectedEvent.Reason;
 import sx.blah.discord.handle.impl.events.ReadyEvent;
 import sx.blah.discord.handle.obj.IChannel;
 import sx.blah.discord.handle.obj.IGuild;
+import sx.blah.discord.handle.obj.IInvite;
 import sx.blah.discord.handle.obj.IUser;
 import sx.blah.discord.handle.obj.Presences;
 
@@ -148,6 +149,10 @@ public class Discord {
 		else
 			opt = Optional.of(gameName);
 		dcCli.updatePresence(getBot().getPresence() == Presences.IDLE, opt);
+	}
+
+	public IInvite getInviteByCode(String code) {
+		return dcCli.getInviteForCode(code);
 	}
 
 }

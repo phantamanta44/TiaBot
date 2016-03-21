@@ -63,7 +63,6 @@ public class ThreadPoolFactory {
 		
 		private PoolType(Function<ExecutorService, ExecutorService> builder) {
 			this.builder = builder;
-			Executors.newSingleThreadScheduledExecutor();
 		}
 		
 	}
