@@ -4,7 +4,7 @@ import java.lang.reflect.Method;
 
 import io.github.phantamanta44.tiabot.core.rate.RateLimitedChannel;
 import io.github.phantamanta44.tiabot.util.MessageUtils;
-import sx.blah.discord.handle.Event;
+import sx.blah.discord.api.Event;
 import sx.blah.discord.handle.obj.IChannel;
 import sx.blah.discord.handle.obj.IGuild;
 import sx.blah.discord.handle.obj.IMessage;

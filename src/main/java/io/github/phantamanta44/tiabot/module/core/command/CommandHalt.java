@@ -1,12 +1,12 @@
 package io.github.phantamanta44.tiabot.module.core.command;
 
-import java.util.Collections;
-import java.util.List;
-
 import io.github.phantamanta44.tiabot.TiaBot;
 import io.github.phantamanta44.tiabot.core.command.ICommand;
 import io.github.phantamanta44.tiabot.core.context.IEventContext;
 import sx.blah.discord.handle.obj.IUser;
+
+import java.util.Collections;
+import java.util.List;
 
 public class CommandHalt implements ICommand {
 
@@ -27,13 +27,31 @@ public class CommandHalt implements ICommand {
 
 	@Override
 	public String getUsage() {
-		return "halt";
+		return "halt [condition]";
 	}
 
 	@Override
 	public void execute(IUser sender, String[] args, IEventContext ctx) {
-		ctx.sendMessage("Halting!");
-		Runtime.getRuntime().exit(0);
+		String msg = "Halting!";
+		int code = 0;
+		if (args.length > 0) {
+			switch (args[0]) {
+				case "reboot":
+					msg = "Rebooting!";
+					code = 32;
+					break;
+				case "update":
+					msg = "Rebooting for update!";
+					code = 33;
+					break;
+				default:
+					ctx.sendMessage("Unknown exit condition!");
+					return;
+			}
+		}
+
+		ctx.sendMessage(msg);
+		Runtime.getRuntime().exit(code);
 	}
 
 	@Override

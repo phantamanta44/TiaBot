@@ -1,30 +1,21 @@
 package io.github.phantamanta44.tiabot.module.lol;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
-
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-
 import io.github.phantamanta44.tiabot.TiaBot;
 import io.github.phantamanta44.tiabot.module.CTModule;
 import io.github.phantamanta44.tiabot.module.lol.command.CommandLoLChamp;
 import io.github.phantamanta44.tiabot.module.lol.command.CommandLoLGame;
 import io.github.phantamanta44.tiabot.module.lol.command.CommandLoLItem;
-import io.github.phantamanta44.tiabot.module.lol.dto.LoLChampion;
-import io.github.phantamanta44.tiabot.module.lol.dto.LoLGame;
-import io.github.phantamanta44.tiabot.module.lol.dto.LoLItem;
-import io.github.phantamanta44.tiabot.module.lol.dto.LoLRegion;
-import io.github.phantamanta44.tiabot.module.lol.dto.LoLSummoner;
+import io.github.phantamanta44.tiabot.module.lol.dto.*;
 import io.github.phantamanta44.tiabot.util.MessageUtils;
-import sx.blah.discord.util.Requests;
+import io.github.phantamanta44.tiabot.util.http.HttpUtils;
+
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 public class LoLModule extends CTModule {
 
@@ -74,7 +65,7 @@ public class LoLModule extends CTModule {
 	private static <T extends JsonElement> T requestFromApi(String reqUrl, String args) throws Exception {
 		JsonParser parser = new JsonParser();
 		String withKey = String.format("%s?api_key=%s%s", reqUrl, getApiKey(), args);
-		return (T)parser.parse(Requests.GET.makeRequest(withKey));
+		return (T)parser.parse(HttpUtils.requestXml(withKey));
 	}
 	
 	private static void loadStaticData(LoLRegion rg) {
@@ -161,7 +152,7 @@ public class LoLModule extends CTModule {
 	public static LoLChampion getChampion(String name) {
 		return champMap.entrySet().stream()
 				.filter(e -> MessageUtils.lenientMatch(e.getValue().getName(), name))
-				.map(e -> e.getValue())
+				.map(Map.Entry::getValue)
 				.findAny().orElse(null);
 	}
 

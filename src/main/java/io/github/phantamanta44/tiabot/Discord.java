@@ -1,29 +1,25 @@
 package io.github.phantamanta44.tiabot;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
-
 import io.github.phantamanta44.tiabot.core.EventDispatcher;
 import io.github.phantamanta44.tiabot.core.command.CommandDispatcher;
 import io.github.phantamanta44.tiabot.util.concurrent.ThreadPoolFactory;
 import io.github.phantamanta44.tiabot.util.concurrent.ThreadPoolFactory.PoolType;
 import io.github.phantamanta44.tiabot.util.concurrent.ThreadPoolFactory.QueueType;
 import sx.blah.discord.api.ClientBuilder;
-import sx.blah.discord.api.DiscordException;
+import sx.blah.discord.api.EventSubscriber;
 import sx.blah.discord.api.IDiscordClient;
-import sx.blah.discord.handle.EventSubscriber;
 import sx.blah.discord.handle.impl.events.DiscordDisconnectedEvent;
 import sx.blah.discord.handle.impl.events.DiscordDisconnectedEvent.Reason;
 import sx.blah.discord.handle.impl.events.ReadyEvent;
-import sx.blah.discord.handle.obj.IChannel;
-import sx.blah.discord.handle.obj.IGuild;
-import sx.blah.discord.handle.obj.IInvite;
-import sx.blah.discord.handle.obj.IUser;
-import sx.blah.discord.handle.obj.Presences;
+import sx.blah.discord.handle.obj.*;
+import sx.blah.discord.util.DiscordException;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 public class Discord {
 	
@@ -44,10 +40,10 @@ public class Discord {
 				.construct();
 	}
 	
-	public Discord buildClient(String email, String pass) throws DiscordException {
+	public Discord buildClient(String token) throws DiscordException {
 		TiaBot.logger.info("Building Discord API...");
 		ClientBuilder cb = new ClientBuilder();
-		dcCli = cb.withLogin(email, pass).build();
+		dcCli = cb.withToken(token).build();
 		registerListener(this);
 		registerListener(new EventDispatcher());
 		EventDispatcher.registerHandler(new CommandDispatcher());

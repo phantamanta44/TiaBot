@@ -1,29 +1,23 @@
 package io.github.phantamanta44.tiabot.core.rate;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-
 import com.github.fge.lambdas.Throwing;
 import com.github.fge.lambdas.runnable.ThrowingRunnable;
 import com.github.fge.lambdas.supplier.ThrowingSupplier;
-
 import io.github.phantamanta44.tiabot.TiaBot;
 import io.github.phantamanta44.tiabot.util.concurrent.IFuture;
-import sx.blah.discord.api.DiscordException;
-import sx.blah.discord.api.MissingPermissionsException;
-import sx.blah.discord.handle.obj.IChannel;
-import sx.blah.discord.handle.obj.IGuild;
-import sx.blah.discord.handle.obj.IInvite;
-import sx.blah.discord.handle.obj.IMessage;
-import sx.blah.discord.handle.obj.IRole;
-import sx.blah.discord.handle.obj.IUser;
-import sx.blah.discord.handle.obj.Permissions;
+import sx.blah.discord.api.IDiscordClient;
+import sx.blah.discord.handle.obj.*;
+import sx.blah.discord.util.DiscordException;
 import sx.blah.discord.util.HTTP429Exception;
 import sx.blah.discord.util.MessageList;
+import sx.blah.discord.util.MissingPermissionsException;
+
+import java.io.File;
+import java.io.IOException;
+import java.time.LocalDateTime;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Map;
 
 public class RateLimitedChannel implements IChannel {
 
@@ -75,6 +69,15 @@ public class RateLimitedChannel implements IChannel {
 	}
 
 	@Override
+	public IMessage sendFile(File file, String s) throws IOException, MissingPermissionsException, DiscordException {
+		try {
+			return parent.sendFile(file, s);
+		} catch (HTTP429Exception ex) {
+			return queueBlocking(() -> sendFile(file, s), ex.getRetryDelay());
+		}
+	}
+
+	@Override
 	public IMessage sendFile(File file) throws IOException, MissingPermissionsException, DiscordException {
 		try {
 			return parent.sendFile(file);
@@ -91,12 +94,6 @@ public class RateLimitedChannel implements IChannel {
 		} catch (HTTP429Exception ex) {
 			return queueBlocking(() -> createInvite(maxAge, maxUses, temporary, useXkcdPass), ex.getRetryDelay());
 		}
-	}
-
-	@Override
-	public void edit(Optional<String> name, Optional<Integer> position, Optional<String> topic)
-			throws DiscordException, MissingPermissionsException {
-		throw new UnsupportedOperationException("Method is deprecated!");
 	}
 
 	@Override
@@ -131,40 +128,7 @@ public class RateLimitedChannel implements IChannel {
 		try {
 			parent.delete();
 		} catch (HTTP429Exception ex) {
-			queueBlocking(() -> delete(), ex.getRetryDelay());
-		}
-	}
-
-	@Deprecated
-	@Override
-	public void removePermissionsOverride(String id)
-			throws MissingPermissionsException, DiscordException {
-		try {
-			parent.removePermissionsOverride(id);
-		} catch (HTTP429Exception ex) {
-			queueBlocking(() -> removePermissionsOverride(id), ex.getRetryDelay());
-		}
-	}
-
-	@Deprecated
-	@Override
-	public void overrideRolePermissions(String roleID, EnumSet<Permissions> toAdd, EnumSet<Permissions> toRemove)
-			throws MissingPermissionsException, DiscordException {
-		try {
-			parent.overrideRolePermissions(roleID, toAdd, toRemove);
-		} catch (HTTP429Exception ex) {
-			queueBlocking(() -> overrideRolePermissions(roleID, toAdd, toRemove), ex.getRetryDelay());
-		}
-	}
-
-	@Deprecated
-	@Override
-	public void overrideUserPermissions(String userID, EnumSet<Permissions> toAdd, EnumSet<Permissions> toRemove)
-			throws MissingPermissionsException, DiscordException {
-		try {
-			parent.overrideUserPermissions(userID, toAdd, toRemove);
-		} catch (HTTP429Exception ex) {
-			queueBlocking(() -> overrideUserPermissions(userID, toAdd, toRemove), ex.getRetryDelay());
+			queueBlocking(this::delete, ex.getRetryDelay());
 		}
 	}
 	
@@ -173,11 +137,21 @@ public class RateLimitedChannel implements IChannel {
 		try {
 			return parent.getInvites();
 		} catch (HTTP429Exception ex) {
-			return queueBlocking(() -> getInvites(), ex.getRetryDelay());
+			return queueBlocking(this::getInvites, ex.getRetryDelay());
 		}
 	}
-	
+
 	// Delegated methods
+
+	@Override
+	public LocalDateTime getCreationDate() {
+		return parent.getCreationDate();
+	}
+
+	@Override
+	public IDiscordClient getClient() {
+		return parent.getClient();
+	}
 
 	@Override
 	public String getName() {
@@ -222,16 +196,6 @@ public class RateLimitedChannel implements IChannel {
 	@Override
 	public boolean getTypingStatus() {
 		return parent.getTypingStatus();
-	}
-
-	@Override
-	public String getLastReadMessageID() {
-		return parent.getLastReadMessageID();
-	}
-
-	@Override
-	public IMessage getLastReadMessage() {
-		return parent.getLastReadMessage();
 	}
 
 	@Override

@@ -19,11 +19,11 @@ public class MathUtils {
 	}
 	
 	public static boolean bounds(float n, float l, float u) {
-		return n >= l && n < u;
+		return n >= l && n <= u;
 	}
 	
 	public static boolean bounds(double n, double l, double u) {
-		return n >= l && n < u;
+		return n >= l && n <= u;
 	}
 	
 }

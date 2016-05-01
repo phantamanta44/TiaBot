@@ -39,12 +39,12 @@ public class CommandEncInfo implements ICommand {
 
 	@Override
 	public String getDesc() {
-		return "Look up a player's info.";
+		return "Look up a game's info.";
 	}
 
 	@Override
 	public String getUsage() {
-		return "encinfo [@player]";
+		return "encinfo [@game]";
 	}
 
 	@Override

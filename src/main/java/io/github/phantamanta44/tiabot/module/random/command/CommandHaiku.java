@@ -1,33 +1,28 @@
 package io.github.phantamanta44.tiabot.module.random.command;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Random;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonParser;
+import io.github.phantamanta44.tiabot.core.command.ICommand;
+import io.github.phantamanta44.tiabot.core.context.IEventContext;
+import io.github.phantamanta44.tiabot.util.MessageUtils;
+import io.github.phantamanta44.tiabot.util.data.CollectionUtils;
+import io.github.phantamanta44.tiabot.util.http.HttpUtils;
+import sx.blah.discord.handle.obj.IUser;
+
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonParser;
-
-import io.github.phantamanta44.tiabot.core.command.ICommand;
-import io.github.phantamanta44.tiabot.core.context.IEventContext;
-import io.github.phantamanta44.tiabot.util.MessageUtils;
-import io.github.phantamanta44.tiabot.util.data.CollectionUtils;
-import sx.blah.discord.handle.obj.IUser;
-import sx.blah.discord.util.Requests;
-
 public class CommandHaiku implements ICommand {
 
 	private static final String WORD_EPT = "http://api.wordnik.com:80/v4/words.json/randomWords?minCorpusCount=15000&limit=768&api_key=a2a73e7b926c924fad7001ca3111acd55af2ffabf50eb4ae5";
-	private static final Collection<Word> STANDARD = Arrays.asList(new Word[] {
+	private static final Collection<Word> STANDARD = Arrays.asList(
 			new Word("the"), new Word("an"), new Word("a"), new Word("some"), new Word("much"),
-			new Word("he"), new Word("she"), new Word("it"), new Word("they"), new Word("them"), new Word("I"), new Word("you")
-	});
+			new Word("he"), new Word("she"), new Word("it"), new Word("they"), new Word("them"),
+			new Word("I"), new Word("you")
+	);
 	
 	@Override
 	public String getName() {
@@ -54,7 +49,7 @@ public class CommandHaiku implements ICommand {
 		Random rand = new Random();
 		JsonParser parser = new JsonParser();
 		try {
-			JsonArray resp = parser.parse(Requests.GET.makeRequest(WORD_EPT)).getAsJsonArray();
+			JsonArray resp = parser.parse(HttpUtils.requestXml(WORD_EPT)).getAsJsonArray();
 			List<Word> words = StreamSupport.stream(resp.spliterator(), false)
 					.map(w -> new Word(w.getAsJsonObject().get("word").getAsString()))
 					.collect(Collectors.toList());
@@ -100,26 +95,26 @@ public class CommandHaiku implements ICommand {
 		return ".*(?:write|generate|make|tell|compose|create)(:? me|us|him|her|it|them)? an?(:? \\w+)? haiku.*";
 	}
 	
-	public static class Sentence {
+	private static class Sentence {
 		
-		public final int targetSyls;
-		private List<Word> words = new ArrayList<>();
+		final int targetSyls;
+		List<Word> words = new ArrayList<>();
 		
-		public Sentence(int syl) {
+		Sentence(int syl) {
 			this.targetSyls = syl;
 		}
 		
-		public void append(Word w) {
+		void append(Word w) {
 			words.add(w);
 		}
 		
-		public int getSyllables() {
+		int getSyllables() {
 			return words.stream()
 					.mapToInt(Word::getSyllables)
 					.reduce((a, b) -> a + b).orElse(0);
 		}
 		
-		public int getRemainingSyls() {
+		int getRemainingSyls() {
 			return targetSyls - getSyllables();
 		}
 		
@@ -132,18 +127,18 @@ public class CommandHaiku implements ICommand {
 		
 	}
 	
-	public static class Word {
+	private static class Word {
 		
 		private static final Pattern VOWEL_PAT = Pattern.compile("([aeiou]|(?>![aeiou])y)+");
 		private static final Pattern END_PAT = Pattern.compile("(?<!(?<![aeiouylp])[aeiouylp])((?<!tr)e|(?<!s)es|(?<![dt])ed)(\\W|$)");
 		
-		public final String text;
+		final String text;
 		
-		public Word(String text) {
+		Word(String text) {
 			this.text = text;
 		}
 		
-		public int getSyllables() {
+		int getSyllables() {
 			Matcher m = VOWEL_PAT.matcher(text.toLowerCase());
 			int syls = 0;
 			while (m.find())

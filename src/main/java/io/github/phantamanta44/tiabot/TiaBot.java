@@ -1,12 +1,5 @@
 package io.github.phantamanta44.tiabot;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.HashSet;
-import java.util.Set;
-
 import io.github.phantamanta44.tiabot.module.CTModule;
 import io.github.phantamanta44.tiabot.module.ModuleManager;
 import io.github.phantamanta44.tiabot.module.core.CoreModule;
@@ -14,10 +7,18 @@ import io.github.phantamanta44.tiabot.module.econ.EconModule;
 import io.github.phantamanta44.tiabot.module.econplus.EconPlusModule;
 import io.github.phantamanta44.tiabot.module.encounter.EncounterModule;
 import io.github.phantamanta44.tiabot.module.fandom.FandomModule;
+import io.github.phantamanta44.tiabot.module.image.ImageModule;
 import io.github.phantamanta44.tiabot.module.lol.LoLModule;
 import io.github.phantamanta44.tiabot.module.random.RandomModule;
 import io.github.phantamanta44.tiabot.module.scripting.ScriptModule;
 import sx.blah.discord.handle.obj.IUser;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
 
 public class TiaBot {
 	
@@ -34,8 +35,8 @@ public class TiaBot {
 			setPrefix(config.get("prefix"));
 			getAdmins();
 			Discord.getInstance()
-					.buildClient(config.get("email"), config.get("pass"))
-					.onReady(() -> registerModules())
+					.buildClient(config.get("token"))
+					.onReady(TiaBot::registerModules)
 					.login();
 		} catch (Exception e) {
 			logger.severe("Something went wrong!");
@@ -52,7 +53,8 @@ public class TiaBot {
 		registerModule(new FandomModule());
 		registerModule(new EconModule());
 		registerModule(new EconPlusModule());
-		Runtime.getRuntime().addShutdownHook(new Thread(() -> ModuleManager.onShutdown()));
+		registerModule(new ImageModule());
+		Runtime.getRuntime().addShutdownHook(new Thread(ModuleManager::onShutdown));
 	}
 	
 	private static void registerModule(CTModule module) {

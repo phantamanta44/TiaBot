@@ -1,32 +1,18 @@
 package io.github.phantamanta44.tiabot.module.scripting.command;
 
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import org.mozilla.javascript.Context;
-import org.mozilla.javascript.RhinoException;
-import org.mozilla.javascript.Scriptable;
-import org.mozilla.javascript.ScriptableObject;
-import org.mozilla.javascript.Undefined;
-
 import io.github.phantamanta44.tiabot.Discord;
 import io.github.phantamanta44.tiabot.core.command.ICommand;
 import io.github.phantamanta44.tiabot.core.context.IEventContext;
-import io.github.phantamanta44.tiabot.module.scripting.host.HostObjectChannel;
-import io.github.phantamanta44.tiabot.module.scripting.host.HostObjectDiscordAPI;
-import io.github.phantamanta44.tiabot.module.scripting.host.HostObjectGuild;
-import io.github.phantamanta44.tiabot.module.scripting.host.HostObjectMessage;
-import io.github.phantamanta44.tiabot.module.scripting.host.HostObjectRole;
-import io.github.phantamanta44.tiabot.module.scripting.host.HostObjectUser;
+import io.github.phantamanta44.tiabot.module.scripting.host.*;
 import io.github.phantamanta44.tiabot.util.MessageUtils;
+import org.mozilla.javascript.*;
 import sx.blah.discord.handle.obj.IUser;
+
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class CommandEval implements ICommand {
 	
@@ -96,7 +82,7 @@ public class CommandEval implements ICommand {
 				ec.sendMessage(rtVal);
 		} catch (RhinoException ex) {
 			ec.sendMessage("```%s\n%s```", ex.getMessage(), Arrays.stream(ex.getScriptStack(8, null))
-					.reduce("", (a, b) -> a.toString().concat("\n").concat(b.toString()), (a, b) -> a.concat(b)));
+					.reduce("", (a, b) -> a.concat("\n").concat(b.toString()), String::concat));
 		} catch (Exception ex) {
 			StackTraceElement ste = ex.getStackTrace()[0];
 			ec.sendMessage("`%s` thrown while executing script (at `%s:%s`)", ex.getClass().getName(), ste.getClassName(), ste.getLineNumber());

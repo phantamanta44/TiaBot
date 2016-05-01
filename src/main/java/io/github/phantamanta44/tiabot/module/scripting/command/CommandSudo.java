@@ -1,18 +1,17 @@
 package io.github.phantamanta44.tiabot.module.scripting.command;
 
-import java.util.Arrays;
-import java.util.regex.Matcher;
-
-import org.mozilla.javascript.Context;
-import org.mozilla.javascript.RhinoException;
-import org.mozilla.javascript.Scriptable;
-import org.mozilla.javascript.Undefined;
-
 import io.github.phantamanta44.tiabot.TiaBot;
 import io.github.phantamanta44.tiabot.core.context.IEventContext;
 import io.github.phantamanta44.tiabot.module.scripting.host.HostObjectDiscordAPI;
 import io.github.phantamanta44.tiabot.util.MessageUtils;
+import org.mozilla.javascript.Context;
+import org.mozilla.javascript.RhinoException;
+import org.mozilla.javascript.Scriptable;
+import org.mozilla.javascript.Undefined;
 import sx.blah.discord.handle.obj.IUser;
+
+import java.util.Arrays;
+import java.util.regex.Matcher;
 
 public class CommandSudo extends CommandEval {
 
@@ -62,7 +61,7 @@ public class CommandSudo extends CommandEval {
 				ec.sendMessage(rtVal);
 		} catch (RhinoException ex) {
 			ec.sendMessage("```%s\n%s```", ex.getMessage(), Arrays.stream(ex.getScriptStack(8, null))
-					.reduce("", (a, b) -> a.toString().concat("\n").concat(b.toString()), (a, b) -> a.concat(b)));
+					.reduce("", (a, b) -> a.concat("\n").concat(b.toString()), String::concat));
 		} catch (Exception ex) {
 			StackTraceElement ste = ex.getStackTrace()[0];
 			ec.sendMessage("`%s` thrown while executing script (at `%s:%s`)", ex.getClass().getName(), ste.getClassName(), ste.getLineNumber());

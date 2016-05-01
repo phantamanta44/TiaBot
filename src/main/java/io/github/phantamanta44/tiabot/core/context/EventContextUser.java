@@ -2,7 +2,7 @@ package io.github.phantamanta44.tiabot.core.context;
 
 import io.github.phantamanta44.tiabot.Discord;
 import io.github.phantamanta44.tiabot.util.MessageUtils;
-import sx.blah.discord.handle.Event;
+import sx.blah.discord.api.Event;
 import sx.blah.discord.handle.obj.IChannel;
 import sx.blah.discord.handle.obj.IGuild;
 import sx.blah.discord.handle.obj.IMessage;
